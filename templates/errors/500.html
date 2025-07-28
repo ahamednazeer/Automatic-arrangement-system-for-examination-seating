@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Internal Server Error{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="error-page text-center">
+                <h2 class="headline text-danger">500</h2>
+                <div class="error-content">
+                    <h3><i class="fas fa-exclamation-triangle text-danger"></i> Oops! Something went wrong.</h3>
+                    <p>
+                        We will work on fixing that right away.
+                        Meanwhile, you may <a href="{{ url_for('dashboard.dashboard') }}">return to dashboard</a> or contact the administrator.
+                    </p>
+                    <div class="mt-4">
+                        <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-primary">
+                            <i class="fas fa-home"></i> Go to Dashboard
+                        </a>
+                        <a href="mailto:admin@exam.com" class="btn btn-outline-secondary">
+                            <i class="fas fa-envelope"></i> Contact Support
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

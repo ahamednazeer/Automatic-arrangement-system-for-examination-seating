@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}Add Invigilator{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Add New Invigilator</h3>
+                    <div class="card-tools">
+                        <a href="{{ url_for('invigilators') }}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back to Invigilators
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="staff_id">Staff ID</label>
+                                    <input type="text" class="form-control" id="staff_id" name="staff_id" 
+                                           placeholder="e.g., STAFF001" required>
+                                    <small class="form-text text-muted">Unique identifier for the staff member</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="name">Full Name</label>
+                                    <input type="text" class="form-control" id="name" name="name" 
+                                           placeholder="e.g., Dr. John Smith" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="email">Email</label>
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                           placeholder="e.g., john.smith@university.edu">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="phone">Phone</label>
+                                    <input type="text" class="form-control" id="phone" name="phone" 
+                                           placeholder="e.g., +1-234-567-8900">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="department">Department</label>
+                                    <select class="form-control" id="department" name="department">
+                                        <option value="">Select Department</option>
+                                        <option value="Computer Science">Computer Science</option>
+                                        <option value="Information Technology">Information Technology</option>
+                                        <option value="Electronics">Electronics</option>
+                                        <option value="Mechanical">Mechanical</option>
+                                        <option value="Civil">Civil</option>
+                                        <option value="Electrical">Electrical</option>
+                                        <option value="Chemical">Chemical</option>
+                                        <option value="Biotechnology">Biotechnology</option>
+                                        <option value="Mathematics">Mathematics</option>
+                                        <option value="Physics">Physics</option>
+                                        <option value="Chemistry">Chemistry</option>
+                                        <option value="Administration">Administration</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="designation">Designation</label>
+                                    <select class="form-control" id="designation" name="designation">
+                                        <option value="">Select Designation</option>
+                                        <option value="Professor">Professor</option>
+                                        <option value="Associate Professor">Associate Professor</option>
+                                        <option value="Assistant Professor">Assistant Professor</option>
+                                        <option value="Lecturer">Lecturer</option>
+                                        <option value="Senior Lecturer">Senior Lecturer</option>
+                                        <option value="Teaching Assistant">Teaching Assistant</option>
+                                        <option value="Lab Assistant">Lab Assistant</option>
+                                        <option value="Administrative Staff">Administrative Staff</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="experience">Experience (Years)</label>
+                                    <input type="number" class="form-control" id="experience" name="experience" 
+                                           min="0" max="50" placeholder="e.g., 5">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="max_assignments">Max Assignments per Day</label>
+                                    <input type="number" class="form-control" id="max_assignments" name="max_assignments" 
+                                           min="1" max="10" value="2" placeholder="e.g., 2">
+                                    <small class="form-text text-muted">Maximum number of invigilation duties per day</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Availability</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="availability" 
+                                               value="morning" id="morning" checked>
+                                        <label class="form-check-label" for="morning">
+                                            Morning Sessions (9:00 AM - 12:00 PM)
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="availability" 
+                                               value="afternoon" id="afternoon" checked>
+                                        <label class="form-check-label" for="afternoon">
+                                            Afternoon Sessions (2:00 PM - 5:00 PM)
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Preferences</label>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="preferences" 
+                                               value="own_department" id="own_department">
+                                        <label class="form-check-label" for="own_department">
+                                            Prefer own department exams
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="preferences" 
+                                               value="ground_floor" id="ground_floor">
+                                        <label class="form-check-label" for="ground_floor">
+                                            Prefer ground floor rooms
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="preferences" 
+                                               value="small_rooms" id="small_rooms">
+                                        <label class="form-check-label" for="small_rooms">
+                                            Prefer smaller rooms
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="notes">Additional Notes</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3" 
+                                      placeholder="Any additional information about the invigilator..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Add Invigilator
+                            </button>
+                            <a href="{{ url_for('invigilators') }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-generate staff ID based on department
+document.getElementById('department').addEventListener('change', function() {
+    const department = this.value;
+    if (department && !document.getElementById('staff_id').value) {
+        const deptCode = {
+            'Computer Science': 'CS',
+            'Information Technology': 'IT',
+            'Electronics': 'EC',
+            'Mechanical': 'ME',
+            'Civil': 'CE',
+            'Electrical': 'EE',
+            'Chemical': 'CH',
+            'Biotechnology': 'BT',
+            'Mathematics': 'MA',
+            'Physics': 'PH',
+            'Chemistry': 'CH',
+            'Administration': 'AD'
+        };
+        
+        const code = deptCode[department] || 'ST';
+        const timestamp = Date.now().toString().slice(-4);
+        document.getElementById('staff_id').value = code + timestamp;
+    }
+});
+
+// Validate phone number format
+document.getElementById('phone').addEventListener('blur', function() {
+    const phone = this.value;
+    if (phone && !/^[\+]?[1-9][\d]{0,15}$/.test(phone.replace(/[\s\-\(\)]/g, ''))) {
+        alert('Please enter a valid phone number');
+        this.focus();
+    }
+});
+</script>
+{% endblock %}

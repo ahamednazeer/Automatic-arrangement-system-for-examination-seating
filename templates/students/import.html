@@ -1,0 +1,636 @@
+{% extends "base.html" %}
+
+{% block title %}Import Students - Exam Seating System{% endblock %}
+{% block page_title %}Import Students{% endblock %}
+
+{% block content %}
+<div class="import-students-content">
+    <!-- Header Section -->
+    <div class="content-header mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-2">Import Students</h2>
+                <p class="text-secondary mb-0">Bulk import student records from CSV file</p>
+            </div>
+            <div class="header-actions">
+                <a href="{{ url_for('students') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Students
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Instructions -->
+    <div class="instructions-section mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-info-circle"></i> Import Instructions
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h4>CSV File Format Requirements</h4>
+                        <p>Your CSV file must include the following columns in this exact order:</p>
+                        
+                        <div class="format-table">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Column</th>
+                                        <th>Required</th>
+                                        <th>Description</th>
+                                        <th>Example</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>student_id</code></td>
+                                        <td><span class="badge badge-danger">Required</span></td>
+                                        <td>Unique student identifier</td>
+                                        <td>CS2024001</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>name</code></td>
+                                        <td><span class="badge badge-danger">Required</span></td>
+                                        <td>Student's full name</td>
+                                        <td>John Doe</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>department</code></td>
+                                        <td><span class="badge badge-danger">Required</span></td>
+                                        <td>Academic department</td>
+                                        <td>Computer Science</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>semester</code></td>
+                                        <td><span class="badge badge-danger">Required</span></td>
+                                        <td>Current semester (1-8)</td>
+                                        <td>3</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>email</code></td>
+                                        <td><span class="badge badge-secondary">Optional</span></td>
+                                        <td>Email address</td>
+                                        <td>john@example.com</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>phone</code></td>
+                                        <td><span class="badge badge-secondary">Optional</span></td>
+                                        <td>Phone number</td>
+                                        <td>+1234567890</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="import-notes">
+                            <h5><i class="fas fa-exclamation-triangle text-warning"></i> Important Notes</h5>
+                            <ul>
+                                <li>The first row must contain column headers</li>
+                                <li>Student IDs must be unique - duplicates will be skipped</li>
+                                <li>Semester must be a number between 1 and 8</li>
+                                <li>Email addresses will be validated if provided</li>
+                                <li>Maximum file size: 16MB</li>
+                                <li>Supported format: CSV (.csv) files only</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="sample-section">
+                            <h4>Sample CSV File</h4>
+                            <p>Download a sample CSV file to see the correct format:</p>
+                            
+                            <button class="btn btn-primary mb-3" onclick="downloadSample()">
+                                <i class="fas fa-download"></i> Download Sample CSV
+                            </button>
+
+                            <div class="sample-preview">
+                                <h5>Sample Content:</h5>
+                                <pre class="sample-code">student_id,name,department,semester,email,phone
+CS2024001,John Doe,Computer Science,3,john@example.com,+1234567890
+IT2024002,Jane Smith,Information Technology,2,jane@example.com,+0987654321
+ME2024003,Bob Johnson,Mechanical,4,,+1122334455</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Section -->
+    <div class="upload-section">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-file-upload"></i> Upload CSV File
+                </h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data" id="importForm">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-content">
+                            <div class="upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <h4>Choose CSV file or drag and drop</h4>
+                            <p>Select a CSV file containing student data</p>
+                            <input type="file" 
+                                   id="fileInput" 
+                                   name="file" 
+                                   accept=".csv" 
+                                   required
+                                   style="display: none;">
+                            <button type="button" class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                                <i class="fas fa-folder-open"></i> Browse Files
+                            </button>
+                        </div>
+                        
+                        <div class="file-info" id="fileInfo" style="display: none;">
+                            <div class="file-details">
+                                <div class="file-icon">
+                                    <i class="fas fa-file-csv"></i>
+                                </div>
+                                <div class="file-meta">
+                                    <div class="file-name" id="fileName"></div>
+                                    <div class="file-size" id="fileSize"></div>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-secondary" onclick="clearFile()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="file-preview" id="filePreview">
+                                <h5>File Preview (first 5 rows):</h5>
+                                <div class="preview-content" id="previewContent"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="upload-actions mt-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="upload-info">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle"></i>
+                                    Make sure your CSV file follows the format requirements above
+                                </small>
+                            </div>
+                            <div class="action-buttons">
+                                <a href="{{ url_for('students') }}" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Cancel
+                                </a>
+                                <button type="submit" class="btn btn-success" id="importBtn" disabled>
+                                    <i class="fas fa-upload"></i> Import Students
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Section -->
+    <div class="progress-section" id="progressSection" style="display: none;">
+        <div class="card">
+            <div class="card-body">
+                <h4><i class="fas fa-spinner fa-spin"></i> Importing Students...</h4>
+                <div class="progress">
+                    <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+                </div>
+                <p class="progress-text" id="progressText">Preparing import...</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.format-table .table {
+    font-size: 0.875rem;
+}
+
+.format-table code {
+    background-color: var(--bg-tertiary);
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+}
+
+.badge-danger {
+    background-color: var(--error-color);
+    color: var(--text-white);
+}
+
+.badge-secondary {
+    background-color: var(--text-secondary);
+    color: var(--text-white);
+}
+
+.import-notes {
+    background-color: var(--bg-tertiary);
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    margin-top: 1.5rem;
+}
+
+.import-notes h5 {
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.import-notes ul {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.import-notes li {
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.sample-section {
+    background-color: var(--bg-secondary);
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    height: fit-content;
+}
+
+.sample-preview {
+    margin-top: 1rem;
+}
+
+.sample-code {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    font-size: 0.75rem;
+    overflow-x: auto;
+    white-space: pre;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.upload-area {
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: 3rem 2rem;
+    text-align: center;
+    transition: all var(--transition-fast);
+    background-color: var(--bg-secondary);
+}
+
+.upload-area.dragover {
+    border-color: var(--primary-color);
+    background-color: rgba(102, 126, 234, 0.05);
+}
+
+.upload-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.upload-icon {
+    font-size: 4rem;
+    color: var(--text-muted);
+}
+
+.upload-area h4 {
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.upload-area p {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.file-info {
+    text-align: left;
+}
+
+.file-details {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    margin-bottom: 1rem;
+}
+
+.file-icon {
+    font-size: 2rem;
+    color: var(--success-color);
+}
+
+.file-meta {
+    flex: 1;
+}
+
+.file-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.file-size {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.file-preview {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+}
+
+.preview-content {
+    max-height: 200px;
+    overflow: auto;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.75rem;
+    background-color: var(--bg-tertiary);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    white-space: pre;
+}
+
+.upload-actions {
+    border-top: 1px solid var(--border-color);
+    padding-top: 1.5rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+.progress-section {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    min-width: 400px;
+}
+
+.progress {
+    width: 100%;
+    height: 20px;
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin: 1rem 0;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    text-align: center;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: -0.75rem;
+}
+
+.col-md-8 {
+    flex: 0 0 66.666667%;
+    max-width: 66.666667%;
+    padding: 0.75rem;
+}
+
+.col-md-4 {
+    flex: 0 0 33.333333%;
+    max-width: 33.333333%;
+    padding: 0.75rem;
+}
+
+@media (max-width: 768px) {
+    .col-md-8,
+    .col-md-4 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .upload-area {
+        padding: 2rem 1rem;
+    }
+    
+    .progress-section {
+        min-width: 90%;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('fileInput');
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInfo = document.getElementById('fileInfo');
+    const uploadContent = uploadArea.querySelector('.upload-content');
+    const importBtn = document.getElementById('importBtn');
+    const importForm = document.getElementById('importForm');
+    const progressSection = document.getElementById('progressSection');
+
+    // File input change handler
+    fileInput.addEventListener('change', handleFileSelect);
+
+    // Drag and drop handlers
+    uploadArea.addEventListener('dragover', handleDragOver);
+    uploadArea.addEventListener('dragleave', handleDragLeave);
+    uploadArea.addEventListener('drop', handleDrop);
+
+    // Form submission handler
+    importForm.addEventListener('submit', handleFormSubmit);
+
+    function handleFileSelect(e) {
+        const file = e.target.files[0];
+        if (file) {
+            processFile(file);
+        }
+    }
+
+    function handleDragOver(e) {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    }
+
+    function handleDragLeave(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+    }
+
+    function handleDrop(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
+                fileInput.files = files;
+                processFile(file);
+            } else {
+                examSeatApp.showNotification('Please select a CSV file', 'error');
+            }
+        }
+    }
+
+    function processFile(file) {
+        // Validate file
+        if (!file.name.endsWith('.csv')) {
+            examSeatApp.showNotification('Please select a CSV file', 'error');
+            return;
+        }
+
+        if (file.size > 16 * 1024 * 1024) {
+            examSeatApp.showNotification('File size too large (max 16MB)', 'error');
+            return;
+        }
+
+        // Show file info
+        document.getElementById('fileName').textContent = file.name;
+        document.getElementById('fileSize').textContent = formatFileSize(file.size);
+        
+        uploadContent.style.display = 'none';
+        fileInfo.style.display = 'block';
+        importBtn.disabled = false;
+
+        // Preview file content
+        previewFile(file);
+    }
+
+    function previewFile(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const text = e.target.result;
+            const lines = text.split('\n').slice(0, 6); // First 6 lines (header + 5 data rows)
+            document.getElementById('previewContent').textContent = lines.join('\n');
+        };
+        reader.readAsText(file);
+    }
+
+    function clearFile() {
+        fileInput.value = '';
+        uploadContent.style.display = 'flex';
+        fileInfo.style.display = 'none';
+        importBtn.disabled = true;
+    }
+
+    function handleFormSubmit(e) {
+        e.preventDefault();
+        
+        if (!fileInput.files[0]) {
+            examSeatApp.showNotification('Please select a file', 'error');
+            return;
+        }
+
+        // Show progress
+        progressSection.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+
+        // Simulate progress (in real implementation, you'd track actual progress)
+        let progress = 0;
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+
+        const interval = setInterval(() => {
+            progress += Math.random() * 20;
+            if (progress > 90) progress = 90;
+            
+            progressBar.style.width = progress + '%';
+            
+            if (progress < 30) {
+                progressText.textContent = 'Reading CSV file...';
+            } else if (progress < 60) {
+                progressText.textContent = 'Validating student data...';
+            } else if (progress < 90) {
+                progressText.textContent = 'Importing students...';
+            }
+        }, 500);
+
+        // Submit form
+        const formData = new FormData(importForm);
+        
+        fetch(importForm.action, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            clearInterval(interval);
+            progressBar.style.width = '100%';
+            progressText.textContent = 'Import completed!';
+            
+            setTimeout(() => {
+                window.location.href = '/students';
+            }, 1000);
+        })
+        .catch(error => {
+            clearInterval(interval);
+            progressSection.style.display = 'none';
+            document.body.style.overflow = '';
+            examSeatApp.showNotification('Import failed: ' + error.message, 'error');
+        });
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+});
+
+function downloadSample() {
+    const sampleData = [
+        ['student_id', 'name', 'department', 'semester', 'email', 'phone'],
+        ['CS2024001', 'John Doe', 'Computer Science', '3', 'john@example.com', '+1234567890'],
+        ['IT2024002', 'Jane Smith', 'Information Technology', '2', 'jane@example.com', '+0987654321'],
+        ['ME2024003', 'Bob Johnson', 'Mechanical', '4', '', '+1122334455'],
+        ['EE2024004', 'Alice Brown', 'Electrical', '1', 'alice@example.com', ''],
+        ['CE2024005', 'Charlie Wilson', 'Civil', '5', 'charlie@example.com', '+5566778899']
+    ];
+
+    const csvContent = sampleData.map(row => 
+        row.map(cell => `"${cell}"`).join(',')
+    ).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'sample_students.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+</script>
+{% endblock %}

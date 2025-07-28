@@ -1,0 +1,381 @@
+{% extends "base.html" %}
+
+{% block title %}Reports{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Reports & Analytics</h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-info btn-sm" onclick="scheduleReport()">
+                            <i class="fas fa-clock"></i> Schedule Report
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Report Categories -->
+                    <div class="row">
+                        <!-- Seating Reports -->
+                        <div class="col-md-4">
+                            <div class="card card-outline card-primary">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-chair"></i> Seating Reports
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="list-group list-group-flush">
+                                        <a href="#" class="list-group-item list-group-item-action" 
+                                           onclick="generateReport('seating_arrangement')">
+                                            <i class="fas fa-map"></i> Seating Arrangement Report
+                                            <small class="text-muted d-block">Room-wise student allocation</small>
+                                        </a>
+                                        <a href="#" class="list-group-item list-group-item-action" 
+                                           onclick="generateReport('student_slips')">
+                                            <i class="fas fa-ticket-alt"></i> Student Admit Cards
+                                            <small class="text-muted d-block">Individual seat slips for students</small>
+                                        </a>
+                                        <a href="#" class="list-group-item list-group-item-action" 
+                                           onclick="generateReport('room_utilization')">
+                                            <i class="fas fa-chart-pie"></i> Room Utilization Report
+                                            <small class="text-muted d-block">Occupancy and efficiency metrics</small>
+                                        </a>
+                                        <a href="#" class="list-group-item list-group-item-action" 
+                                           onclick="generateReport('conflict_analysis')">
+                                            <i class="fas fa-exclamation-triangle"></i> Conflict Analysis
+                                            <small class="text-muted d-block">Department/subject conflicts</small>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Student Reports -->
+                        <div class="col-md-4">
+                            <div class="card card-outline card-success">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-users"></i> Student Reports
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="list-group list-group-flush">
+                                        <a href="#" class="list-group-item list-group-item-action" 
+                                           onclick="generateReport('student_list')">
+                                            <i class="fas fa-list"></i> Student Master List
+                                            <small class="text-muted d-block">Complete student database</small>
+                                        </a>
+                                        <a href="#" class="list-group-item list-group-item-action" 
+                                           onclick="generateReport('department_wise')">
+                                            <i class="fas fa-building"></i> Department-wise Report
+                                            <small class="text-muted d-block">Students grouped by department</small>
+                                        </a>
+                                        <a href="#" class="list-group-item list-group-item-action" 
+                                           onclick="generateReport('subject_enrollment')">
+                                            <i class="fas fa-book"></i> Subject Enrollment
+                                            <small class="text-muted d-block">Subject-wise student count</small>
+                                        </a>
+                                        <a href="#" class="list-group-item list-group-item-action" 
+                                           onclick="generateReport('attendance_sheet')">
+                                            <i class="fas fa-clipboard-check"></i> Attendance Sheets
+                                            <small class="text-muted d-block">Printable attendance forms</small>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Invigilator Reports -->
+                        <div class="col-md-4">
+                            <div class="card card-outline card-warning">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-user-tie"></i> Invigilator Reports
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="list-group list-group-flush">
+                                        <a href="#" class="list-group-item list-group-item-action" 
+                                           onclick="generateReport('duty_roster')">
+                                            <i class="fas fa-calendar-alt"></i> Duty Roster
+                                            <small class="text-muted d-block">Invigilator assignments schedule</small>
+                                        </a>
+                                        <a href="#" class="list-group-item list-group-item-action" 
+                                           onclick="generateReport('workload_analysis')">
+                                            <i class="fas fa-chart-bar"></i> Workload Analysis
+                                            <small class="text-muted d-block">Assignment distribution analysis</small>
+                                        </a>
+                                        <a href="#" class="list-group-item list-group-item-action" 
+                                           onclick="generateReport('invigilator_list')">
+                                            <i class="fas fa-address-book"></i> Invigilator Directory
+                                            <small class="text-muted d-block">Contact information and details</small>
+                                        </a>
+                                        <a href="#" class="list-group-item list-group-item-action" 
+                                           onclick="generateReport('duty_certificates')">
+                                            <i class="fas fa-certificate"></i> Duty Certificates
+                                            <small class="text-muted d-block">Invigilation duty certificates</small>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Dashboard -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card card-outline card-info">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-chart-line"></i> Analytics Dashboard
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-lg-3 col-6">
+                                            <div class="small-box bg-info">
+                                                <div class="inner">
+                                                    <h3>{{ total_students or 0 }}</h3>
+                                                    <p>Total Students</p>
+                                                </div>
+                                                <div class="icon">
+                                                    <i class="fas fa-users"></i>
+                                                </div>
+                                                <a href="#" class="small-box-footer" onclick="generateReport('student_list')">
+                                                    Generate Report <i class="fas fa-arrow-circle-right"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-6">
+                                            <div class="small-box bg-success">
+                                                <div class="inner">
+                                                    <h3>{{ total_exams or 0 }}</h3>
+                                                    <p>Scheduled Exams</p>
+                                                </div>
+                                                <div class="icon">
+                                                    <i class="fas fa-calendar"></i>
+                                                </div>
+                                                <a href="#" class="small-box-footer" onclick="generateReport('exam_schedule')">
+                                                    Generate Report <i class="fas fa-arrow-circle-right"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-6">
+                                            <div class="small-box bg-warning">
+                                                <div class="inner">
+                                                    <h3>{{ total_rooms or 0 }}</h3>
+                                                    <p>Available Rooms</p>
+                                                </div>
+                                                <div class="icon">
+                                                    <i class="fas fa-door-open"></i>
+                                                </div>
+                                                <a href="#" class="small-box-footer" onclick="generateReport('room_utilization')">
+                                                    Generate Report <i class="fas fa-arrow-circle-right"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-6">
+                                            <div class="small-box bg-danger">
+                                                <div class="inner">
+                                                    <h3>{{ total_invigilators or 0 }}</h3>
+                                                    <p>Invigilators</p>
+                                                </div>
+                                                <div class="icon">
+                                                    <i class="fas fa-user-tie"></i>
+                                                </div>
+                                                <a href="#" class="small-box-footer" onclick="generateReport('duty_roster')">
+                                                    Generate Report <i class="fas fa-arrow-circle-right"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Reports -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">Recent Reports</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Report Name</th>
+                                                    <th>Type</th>
+                                                    <th>Generated On</th>
+                                                    <th>Size</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Seating Arrangement - 2024-01-15</td>
+                                                    <td><span class="badge badge-primary">PDF</span></td>
+                                                    <td>2024-01-15 10:30 AM</td>
+                                                    <td>2.5 MB</td>
+                                                    <td>
+                                                        <a href="#" class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-download"></i>
+                                                        </a>
+                                                        <a href="#" class="btn btn-sm btn-outline-info">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Student Master List</td>
+                                                    <td><span class="badge badge-success">Excel</span></td>
+                                                    <td>2024-01-14 03:45 PM</td>
+                                                    <td>1.2 MB</td>
+                                                    <td>
+                                                        <a href="#" class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-download"></i>
+                                                        </a>
+                                                        <a href="#" class="btn btn-sm btn-outline-info">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Generation Modal -->
+<div class="modal fade" id="reportModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Generate Report</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="reportForm">
+                    <input type="hidden" id="reportType" name="reportType">
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="dateFrom">From Date</label>
+                                <input type="date" class="form-control" id="dateFrom" name="dateFrom">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="dateTo">To Date</label>
+                                <input type="date" class="form-control" id="dateTo" name="dateTo">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="format">Format</label>
+                                <select class="form-control" id="format" name="format">
+                                    <option value="pdf">PDF</option>
+                                    <option value="excel">Excel</option>
+                                    <option value="csv">CSV</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="department">Department (Optional)</label>
+                                <select class="form-control" id="department" name="department">
+                                    <option value="">All Departments</option>
+                                    <option value="Computer Science">Computer Science</option>
+                                    <option value="Information Technology">Information Technology</option>
+                                    <option value="Electronics">Electronics</option>
+                                    <option value="Mechanical">Mechanical</option>
+                                    <option value="Civil">Civil</option>
+                                    <option value="Electrical">Electrical</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="includeStats" name="includeStats" checked>
+                            <label class="custom-control-label" for="includeStats">
+                                Include statistical summary
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="emailReport" name="emailReport">
+                            <label class="custom-control-label" for="emailReport">
+                                Email report to administrators
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="processReport()">
+                    <i class="fas fa-cogs"></i> Generate Report
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function generateReport(reportType) {
+    document.getElementById('reportType').value = reportType;
+    
+    // Set default dates
+    const today = new Date();
+    const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+    
+    document.getElementById('dateFrom').value = lastMonth.toISOString().split('T')[0];
+    document.getElementById('dateTo').value = today.toISOString().split('T')[0];
+    
+    $('#reportModal').modal('show');
+}
+
+function processReport() {
+    const formData = new FormData(document.getElementById('reportForm'));
+    
+    // Show loading state
+    const btn = event.target;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+    btn.disabled = true;
+    
+    // Simulate report generation (replace with actual implementation)
+    setTimeout(() => {
+        alert('Report generated successfully!');
+        $('#reportModal').modal('hide');
+        btn.innerHTML = '<i class="fas fa-cogs"></i> Generate Report';
+        btn.disabled = false;
+    }, 3000);
+}
+
+function scheduleReport() {
+    alert('Report scheduling feature coming soon!');
+}
+</script>
+{% endblock %}

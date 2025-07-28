@@ -1,0 +1,518 @@
+{% extends "base.html" %}
+
+{% block title %}Students - Exam Seating System{% endblock %}
+{% block page_title %}Student Management{% endblock %}
+
+{% block content %}
+<div class="students-content">
+    <!-- Header Section -->
+    <div class="content-header mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-2">Students</h2>
+                <p class="text-secondary mb-0">Manage student records and information</p>
+            </div>
+            <div class="header-actions">
+                <a href="{{ url_for('import_students') }}" class="btn btn-secondary mr-2">
+                    <i class="fas fa-file-upload"></i> Import CSV
+                </a>
+                <a href="{{ url_for('add_student') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Student
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="filters-section mb-4">
+        <div class="card">
+            <div class="card-body">
+                <form method="GET" class="filter-form">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="form-label">Search</label>
+                                <input type="text" 
+                                       name="search" 
+                                       class="form-control" 
+                                       placeholder="Search by name or ID..."
+                                       value="{{ current_search }}">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="form-label">Department</label>
+                                <select name="department" class="form-control form-select">
+                                    <option value="">All Departments</option>
+                                    {% for dept in departments %}
+                                    <option value="{{ dept.department }}" 
+                                            {% if current_department == dept.department %}selected{% endif %}>
+                                        {{ dept.department }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="form-label">Semester</label>
+                                <select name="semester" class="form-control form-select">
+                                    <option value="">All Semesters</option>
+                                    {% for sem in semesters %}
+                                    <option value="{{ sem.semester }}" 
+                                            {% if current_semester == sem.semester|string %}selected{% endif %}>
+                                        Semester {{ sem.semester }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="form-label">&nbsp;</label>
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search"></i> Filter
+                                    </button>
+                                    <a href="{{ url_for('students') }}" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> Clear
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Students Table -->
+    <div class="table-section">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    Students List 
+                    <span class="badge badge-primary ml-2">{{ students|length }} students</span>
+                </h3>
+                <div class="card-actions">
+                    <button class="btn btn-sm btn-secondary" onclick="exportToCSV()">
+                        <i class="fas fa-download"></i> Export CSV
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if students %}
+                <div class="table-container">
+                    <table class="table data-table" id="studentsTable">
+                        <thead>
+                            <tr>
+                                <th data-sortable>Student ID</th>
+                                <th data-sortable>Name</th>
+                                <th data-sortable>Department</th>
+                                <th data-sortable>Semester</th>
+                                <th>Subjects</th>
+                                <th>Contact</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td>
+                                    <div class="student-id">
+                                        <strong>{{ student.student_id }}</strong>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="student-info">
+                                        <div class="student-name">{{ student.name }}</div>
+                                        <small class="text-muted">
+                                            Registered: {{ moment(student.created_at).format('MMM DD, YYYY') if moment else student.created_at }}
+                                        </small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge badge-department">{{ student.department }}</span>
+                                </td>
+                                <td>
+                                    <span class="semester-badge">Semester {{ student.semester }}</span>
+                                </td>
+                                <td>
+                                    <div class="subjects-list">
+                                        {% if student.subjects %}
+                                            {% set subject_list = student.subjects.split(',') %}
+                                            {% for subject in subject_list[:2] %}
+                                                <span class="subject-tag">{{ subject }}</span>
+                                            {% endfor %}
+                                            {% if subject_list|length > 2 %}
+                                                <span class="subject-more">+{{ subject_list|length - 2 }} more</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-muted">No subjects</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="contact-info">
+                                        {% if student.email %}
+                                            <div class="contact-item">
+                                                <i class="fas fa-envelope"></i>
+                                                <span>{{ student.email }}</span>
+                                            </div>
+                                        {% endif %}
+                                        {% if student.phone %}
+                                            <div class="contact-item">
+                                                <i class="fas fa-phone"></i>
+                                                <span>{{ student.phone }}</span>
+                                            </div>
+                                        {% endif %}
+                                        {% if not student.email and not student.phone %}
+                                            <span class="text-muted">No contact info</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a href="{{ url_for('edit_student', student_id=student.student_id) }}" 
+                                           class="btn btn-sm btn-secondary"
+                                           data-tooltip="Edit Student">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button class="btn btn-sm btn-danger" 
+                                                onclick="confirmDelete('{{ student.student_id }}', '{{ student.name }}')"
+                                                data-tooltip="Delete Student">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <h3>No Students Found</h3>
+                    <p>No students match your current filters. Try adjusting your search criteria or add new students.</p>
+                    <div class="empty-actions">
+                        <a href="{{ url_for('add_student') }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add First Student
+                        </a>
+                        <a href="{{ url_for('import_students') }}" class="btn btn-secondary">
+                            <i class="fas fa-file-upload"></i> Import Students
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal" id="deleteModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Confirm Delete</h3>
+            <button class="modal-close" data-modal-close>
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete student <strong id="deleteStudentName"></strong>?</p>
+            <p class="text-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                This action cannot be undone and will also remove all seating arrangements for this student.
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" data-modal-close>Cancel</button>
+            <form id="deleteForm" method="POST" style="display: inline;">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Delete Student
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.content-header h2 {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.student-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.student-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.badge-department {
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: var(--text-white);
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-lg);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.semester-badge {
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.subjects-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+.subject-tag {
+    background-color: rgba(102, 126, 234, 0.1);
+    color: var(--primary-color);
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.subject-more {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-style: italic;
+}
+
+.contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.contact-item i {
+    width: 12px;
+    text-align: center;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+}
+
+.empty-state h3 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.empty-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-content {
+    background: var(--bg-primary);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: var(--radius-md);
+    transition: background-color var(--transition-fast);
+    margin-left: auto;
+}
+
+.modal-close:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.modal-body {
+    padding: 2rem;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1.5rem 2rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: -0.75rem;
+}
+
+.col-md-3 {
+    flex: 0 0 25%;
+    max-width: 25%;
+    padding: 0.75rem;
+}
+
+@media (max-width: 768px) {
+    .col-md-3 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+    
+    .header-actions {
+        flex-direction: column;
+    }
+    
+    .empty-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .col-md-3 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmDelete(studentId, studentName) {
+    document.getElementById('deleteStudentName').textContent = studentName;
+    document.getElementById('deleteForm').action = `/students/delete/${studentId}`;
+    examSeatApp.openModal('deleteModal');
+}
+
+function exportToCSV() {
+    const table = document.getElementById('studentsTable');
+    const rows = table.querySelectorAll('tr');
+    const csvData = [];
+    
+    // Get headers
+    const headers = [];
+    rows[0].querySelectorAll('th').forEach((th, index) => {
+        if (index < 6) { // Exclude actions column
+            headers.push(th.textContent.trim());
+        }
+    });
+    csvData.push(headers);
+    
+    // Get data rows
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const rowData = [];
+        const cells = row.querySelectorAll('td');
+        
+        for (let j = 0; j < 6; j++) { // Exclude actions column
+            if (cells[j]) {
+                let cellText = cells[j].textContent.trim();
+                // Clean up the text
+                cellText = cellText.replace(/\s+/g, ' ');
+                rowData.push(cellText);
+            }
+        }
+        csvData.push(rowData);
+    }
+    
+    // Convert to CSV string
+    const csvString = csvData.map(row => 
+        row.map(cell => `"${cell}"`).join(',')
+    ).join('\n');
+    
+    // Download CSV
+    const blob = new Blob([csvString], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'students.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,361 @@
+{% extends "base.html" %}
+
+{% block title %}Rooms - Exam Seating System{% endblock %}
+{% block page_title %}Room Management{% endblock %}
+
+{% block content %}
+<div class="rooms-content">
+    <!-- Header Section -->
+    <div class="content-header mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-2">Exam Rooms</h2>
+                <p class="text-secondary mb-0">Manage examination rooms and their configurations</p>
+            </div>
+            <div class="header-actions">
+                <a href="{{ url_for('add_room') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Room
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rooms Grid -->
+    <div class="rooms-grid">
+        {% if rooms %}
+            {% for room in rooms %}
+            <div class="room-card">
+                <div class="room-header">
+                    <div class="room-id">{{ room.room_id }}</div>
+                    <div class="room-actions">
+                        <button class="btn btn-sm btn-secondary" onclick="editRoom('{{ room.room_id }}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteRoom('{{ room.room_id }}', '{{ room.name }}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="room-body">
+                    <h3 class="room-name">{{ room.name }}</h3>
+                    
+                    <div class="room-details">
+                        <div class="detail-item">
+                            <i class="fas fa-building"></i>
+                            <span>{{ room.building or 'Main Building' }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-layer-group"></i>
+                            <span>Floor {{ room.floor or 'Ground' }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="room-layout">
+                        <div class="layout-preview">
+                            <div class="layout-grid" style="grid-template-columns: repeat({{ room.cols }}, 1fr); grid-template-rows: repeat({{ room.rows }}, 1fr);">
+                                {% for row in range(room.rows) %}
+                                    {% for col in range(room.cols) %}
+                                        <div class="seat-dot"></div>
+                                    {% endfor %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="layout-info">
+                            <div class="info-item">
+                                <span class="info-label">Rows:</span>
+                                <span class="info-value">{{ room.rows }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Columns:</span>
+                                <span class="info-value">{{ room.cols }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Capacity:</span>
+                                <span class="info-value">{{ room.capacity }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="room-footer">
+                    <div class="room-status">
+                        <span class="status-indicator status-available"></span>
+                        <span>Available</span>
+                    </div>
+                    <div class="room-date">
+                        Added {{ moment(room.created_at).fromNow() if moment else room.created_at }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-door-open"></i>
+                </div>
+                <h3>No Rooms Available</h3>
+                <p>Start by adding your first examination room to the system.</p>
+                <a href="{{ url_for('add_room') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add First Room
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.rooms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.room-card {
+    background: var(--bg-primary);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    transition: all var(--transition-fast);
+    border: 1px solid var(--border-color);
+}
+
+.room-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.room-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: var(--text-white);
+}
+
+.room-id {
+    font-weight: 700;
+    font-size: 1.125rem;
+}
+
+.room-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.room-actions .btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: var(--text-white);
+}
+
+.room-actions .btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.room-body {
+    padding: 1.5rem;
+}
+
+.room-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.room-details {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.detail-item i {
+    color: var(--primary-color);
+}
+
+.room-layout {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.layout-preview {
+    flex: 1;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.layout-grid {
+    display: grid;
+    gap: 2px;
+    max-width: 100px;
+    max-height: 80px;
+}
+
+.seat-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--primary-color);
+    border-radius: 50%;
+}
+
+.layout-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-width: 100px;
+}
+
+.info-label {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.info-value {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.room-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+}
+
+.room-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.status-available {
+    background: var(--success-color);
+}
+
+.status-occupied {
+    background: var(--error-color);
+}
+
+.status-maintenance {
+    background: var(--warning-color);
+}
+
+.room-date {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+}
+
+.empty-state h3 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@media (max-width: 768px) {
+    .rooms-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .room-layout {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .layout-preview {
+        width: 100%;
+    }
+    
+    .layout-info {
+        flex-direction: row;
+        justify-content: space-around;
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function editRoom(roomId) {
+    window.location.href = `/rooms/edit/${roomId}`;
+}
+
+function deleteRoom(roomId, roomName) {
+    if (confirm(`Are you sure you want to delete room "${roomName}"?\n\nThis action cannot be undone and will remove all seating arrangements for this room.`)) {
+        fetch(`/rooms/delete/${roomId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                examSeatApp.showNotification('Room deleted successfully', 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                examSeatApp.showNotification('Error deleting room', 'error');
+            }
+        })
+        .catch(error => {
+            examSeatApp.showNotification('Error deleting room', 'error');
+        });
+    }
+}
+</script>
+{% endblock %}
