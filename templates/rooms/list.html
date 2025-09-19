@@ -331,12 +331,12 @@
 {% block extra_js %}
 <script>
 function editRoom(roomId) {
-    window.location.href = `/rooms/edit/${roomId}`;
+    window.location.href = "{{ url_for('edit_room', room_id='ROOM_ID') }}".replace('ROOM_ID', roomId);
 }
 
 function deleteRoom(roomId, roomName) {
     if (confirm(`Are you sure you want to delete room "${roomName}"?\n\nThis action cannot be undone and will remove all seating arrangements for this room.`)) {
-        fetch(`/rooms/delete/${roomId}`, {
+        fetch("{{ url_for('delete_room', room_id='ROOM_ID') }}".replace('ROOM_ID', roomId), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

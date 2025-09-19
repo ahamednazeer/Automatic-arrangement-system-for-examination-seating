@@ -1,0 +1,15 @@
+version: "3.9"
+services:
+  web:
+    image: exam-seating-system:0.1
+    container_name: exam-seating
+    ports:
+      - "5001:5000"
+    environment:
+      - TZ=UTC
+      - FLASK_ENV=production
+    volumes:
+      - ./exam_system.db:/app/exam_system.db
+      - ./uploads:/app/uploads
+      - ./reports:/app/reports
+    restart: unless-stopped

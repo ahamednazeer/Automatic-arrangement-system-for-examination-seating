@@ -1,0 +1,476 @@
+{% extends "base.html" %}
+
+{% block title %}Generate Seating - Exam Seating System{% endblock %}
+{% block page_title %}Generate Seating{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-content">
+        <h2>Generate Seating Arrangement</h2>
+        <p>Create automatic seating arrangements for examinations</p>
+    </div>
+    <div class="page-header-actions">
+    <a href="{{ url_for('seating') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Seating
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3>Select Exam Session</h3>
+                <p class="card-subtitle">Choose the exam date and session time for seating generation</p>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="generateSeatingForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="exam_date">Exam Date *</label>
+                                <input type="date" 
+                                       id="exam_date" 
+                                       name="exam_date" 
+                                       class="form-control" 
+                                       required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="session_time">Session Time *</label>
+                                <select id="session_time" name="session_time" class="form-control" required>
+                                    <option value="">Select Session Time</option>
+                                    <option value="09:00">Morning Session (09:00 AM)</option>
+                                    <option value="10:00">10:00 AM Session</option>
+                                    <option value="11:00">11:00 AM Session</option>
+                                    <option value="12:00">Noon Session (12:00 PM)</option>
+                                    <option value="13:00">Afternoon Session (01:00 PM)</option>
+                                    <option value="14:00">02:00 PM Session</option>
+                                    <option value="15:00">03:00 PM Session</option>
+                                    <option value="16:00">Evening Session (04:00 PM)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="exam-preview" id="examPreview" style="display: none;">
+                        <h4>Exams for Selected Session</h4>
+                        <div id="examList" class="exam-list-preview">
+                            <!-- Exam details will be populated here -->
+                        </div>
+                    </div>
+
+                    <div class="generation-options">
+                        <h4>Generation Options</h4>
+                        
+                        <!-- Seat Numbering Scheme -->
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="numbering_scheme">Seat Numbering Scheme *</label>
+                                    <select id="numbering_scheme" name="numbering_scheme" class="form-control" required>
+                                        <option value="alpha_numeric">Alphabetic-Numeric (A1, A2, B1, B2...)</option>
+                                        <option value="sequential">Sequential (1, 2, 3, 4...)</option>
+                                        <option value="row_col">Row-Column (R1C1, R1C2, R2C1...)</option>
+                                        <option value="room_prefix">Room Prefix (ROOM1-001, ROOM1-002...)</option>
+                                    </select>
+                                    <small class="form-text text-muted">Choose how seat numbers will be generated</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="separateDepartments" name="separate_departments" checked>
+                                        <span class="checkmark"></span>
+                                        Separate students by department
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="alternateSeating" name="alternate_seating" checked>
+                                        <span class="checkmark"></span>
+                                        Use alternate seating pattern
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="avoidConflicts" name="avoid_conflicts" checked>
+                                        <span class="checkmark"></span>
+                                        Avoid student conflicts
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="optimizeRooms" name="optimize_rooms" checked>
+                                        <span class="checkmark"></span>
+                                        Optimize room utilization
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-lg" id="generateBtn">
+                            <i class="fas fa-cogs"></i> Generate Seating Arrangement
+                        </button>
+                        <a href="{{ url_for('seating') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3>System Status</h3>
+            </div>
+            <div class="card-body">
+                <div class="status-checks">
+                    <div class="status-item" id="studentsStatus">
+                        <i class="fas fa-user-graduate"></i>
+                        <div>
+                            <strong>Students</strong>
+                            <p id="studentsCount">Loading...</p>
+                        </div>
+                        <div class="status-indicator" id="studentsIndicator">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </div>
+                    </div>
+                    <div class="status-item" id="roomsStatus">
+                        <i class="fas fa-door-open"></i>
+                        <div>
+                            <strong>Rooms</strong>
+                            <p id="roomsCount">Loading...</p>
+                        </div>
+                        <div class="status-indicator" id="roomsIndicator">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </div>
+                    </div>
+                    <div class="status-item" id="subjectsStatus">
+                        <i class="fas fa-book"></i>
+                        <div>
+                            <strong>Subjects</strong>
+                            <p id="subjectsCount">Loading...</p>
+                        </div>
+                        <div class="status-indicator" id="subjectsIndicator">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Generation Rules</h3>
+            </div>
+            <div class="card-body">
+                <div class="rules-list">
+                    <div class="rule-item">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <p>Students from different departments are separated when possible</p>
+                    </div>
+                    <div class="rule-item">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <p>Alternate seating pattern prevents cheating</p>
+                    </div>
+                    <div class="rule-item">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <p>Room capacity is respected</p>
+                    </div>
+                    <div class="rule-item">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <p>Student conflicts are automatically avoided</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Need Help?</h3>
+            </div>
+            <div class="card-body">
+                <div class="help-content">
+                    <p><strong>Before generating:</strong></p>
+                    <ul>
+                        <li>Ensure all students are registered</li>
+                        <li>Verify room capacities are set</li>
+                        <li>Check exam schedules are correct</li>
+                    </ul>
+                    <p><strong>After generation:</strong></p>
+                    <ul>
+                        <li>Review the seating arrangement</li>
+                        <li>Print seating charts</li>
+                        <li>Notify invigilators</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Modal -->
+<div class="modal" id="loadingModal">
+    <div class="modal-content modal-sm">
+        <div class="modal-body text-center">
+            <div class="loading-spinner">
+                <i class="fas fa-cogs fa-spin fa-3x text-primary"></i>
+            </div>
+            <h3>Generating Seating Arrangement</h3>
+            <p>Please wait while we create the optimal seating arrangement...</p>
+            <div class="progress">
+                <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.exam-list-preview {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.exam-preview-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.exam-preview-item:last-child {
+    border-bottom: none;
+}
+
+.generation-options {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e0e0e0;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    margin-bottom: 0;
+}
+
+.checkbox-label input[type="checkbox"] {
+    margin-right: 0.5rem;
+}
+
+.status-checks {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.status-item i:first-child {
+    font-size: 1.5rem;
+    color: #007bff;
+}
+
+.status-item div {
+    flex: 1;
+}
+
+.status-item p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.status-indicator {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.status-indicator.success {
+    color: #28a745;
+}
+
+.status-indicator.error {
+    color: #dc3545;
+}
+
+.rules-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.rule-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.rule-item p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.help-content ul {
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.loading-spinner {
+    margin-bottom: 1rem;
+}
+
+.progress {
+    width: 100%;
+    height: 8px;
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 1rem;
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: #007bff;
+    transition: width 0.3s ease;
+}
+
+.modal-sm {
+    max-width: 400px;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Load system status
+function loadSystemStatus() {
+    // Simulate loading status (replace with actual AJAX calls)
+    setTimeout(() => {
+        document.getElementById('studentsCount').textContent = '150 registered';
+        document.getElementById('studentsIndicator').innerHTML = '<i class="fas fa-check-circle text-success"></i>';
+        
+        document.getElementById('roomsCount').textContent = '8 available';
+        document.getElementById('roomsIndicator').innerHTML = '<i class="fas fa-check-circle text-success"></i>';
+        
+        document.getElementById('subjectsCount').textContent = '25 subjects';
+        document.getElementById('subjectsIndicator').innerHTML = '<i class="fas fa-check-circle text-success"></i>';
+    }, 1000);
+}
+
+// Load exams for selected date and time
+function loadExamsForSession() {
+    const examDate = document.getElementById('exam_date').value;
+    const sessionTime = document.getElementById('session_time').value;
+    
+    if (examDate && sessionTime) {
+        // Simulate loading exams (replace with actual AJAX call)
+        const examPreview = document.getElementById('examPreview');
+        const examList = document.getElementById('examList');
+        
+        // Show loading
+        examList.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Loading exams...</p>';
+        examPreview.style.display = 'block';
+        
+        // Load from backend
+        fetch(`/seating/session-exams?date=${encodeURIComponent(examDate)}&session=${encodeURIComponent(sessionTime)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.exams && data.exams.length) {
+                    examList.innerHTML = data.exams.map(ex => `
+                        <div class="exam-preview-item">
+                            <div>
+                                <strong>${ex.subject_name}</strong>
+                                <small class="d-block text-muted">${ex.subject_code}</small>
+                            </div>
+                            <span class="badge badge-primary">${ex.student_count} students</span>
+                        </div>
+                    `).join('');
+                } else {
+                    examList.innerHTML = '<p>No exams found for the selected session.</p>';
+                }
+            })
+            .catch(() => {
+                examList.innerHTML = '<p class="text-danger">Failed to load exams. Please try again.</p>';
+            });
+    } else {
+        document.getElementById('examPreview').style.display = 'none';
+    }
+}
+
+// Form submission with loading modal
+document.getElementById('generateSeatingForm').addEventListener('submit', function(e) {
+    const examDate = document.getElementById('exam_date').value;
+    const sessionTime = document.getElementById('session_time').value;
+    
+    if (!examDate || !sessionTime) {
+        e.preventDefault();
+        alert('Please select both exam date and session time.');
+        return false;
+    }
+    
+    // Show loading modal
+    document.getElementById('loadingModal').style.display = 'flex';
+    
+    // Simulate progress
+    let progress = 0;
+    const progressBar = document.getElementById('progressBar');
+    const interval = setInterval(() => {
+        progress += Math.random() * 20;
+        if (progress > 90) progress = 90;
+        progressBar.style.width = progress + '%';
+    }, 200);
+    
+    // Clear interval after form submission
+    setTimeout(() => {
+        clearInterval(interval);
+        progressBar.style.width = '100%';
+    }, 2000);
+});
+
+// Event listeners
+document.getElementById('exam_date').addEventListener('change', loadExamsForSession);
+document.getElementById('session_time').addEventListener('change', loadExamsForSession);
+
+// Set minimum date to today
+document.getElementById('exam_date').min = new Date().toISOString().split('T')[0];
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    loadSystemStatus();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,721 @@
+{% extends "base.html" %}
+
+{% block title %}View Seating - Exam Seating System{% endblock %}
+{% block page_title %}Seating Arrangement{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-content">
+        <h2>Seating Arrangement</h2>
+        <p>{{ exam_date }} - {{ session_time }}</p>
+    </div>
+    <div class="page-header-actions">
+        <button onclick="showRegenerateModal()" class="btn btn-warning">
+            <i class="fas fa-sync-alt"></i> Regenerate Numbers
+        </button>
+        <button onclick="printSeating()" class="btn btn-success">
+            <i class="fas fa-print"></i> Print
+        </button>
+        <button onclick="exportSeating()" class="btn btn-info">
+            <i class="fas fa-download"></i> Export
+        </button>
+    <a href="{{ url_for('seating') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
+{% if arrangements %}
+<div class="seating-overview">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-value">{{ arrangements|length }}</div>
+                <div class="stat-label">Total Students</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-value">{{ rooms|length }}</div>
+                <div class="stat-label">Rooms Used</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-value">{{ (arrangements|groupby('subject_code'))|list|length }}</div>
+                <div class="stat-label">Subjects</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-value">{{ session_time }}</div>
+                <div class="stat-label">Session Time</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="seating-tabs">
+    <div class="tab-buttons">
+        <button class="tab-btn active" onclick="showTab('room-view')">
+            <i class="fas fa-door-open"></i> Room View
+        </button>
+        <button class="tab-btn" onclick="showTab('student-list')">
+            <i class="fas fa-list"></i> Student List
+        </button>
+        <button class="tab-btn" onclick="showTab('subject-wise')">
+            <i class="fas fa-book"></i> Subject Wise
+        </button>
+    </div>
+
+    <!-- Room View Tab -->
+    <div id="room-view" class="tab-content active">
+        {% for room in rooms %}
+        <div class="room-card">
+            <div class="room-header">
+                <h3>{{ room.name }}</h3>
+                <div class="room-info">
+                    <span class="badge badge-info">Capacity: {{ room.capacity }}</span>
+                    <span class="badge badge-success">
+                        Occupied: {{ arrangements|selectattr('room_id', 'equalto', room.room_id)|list|length }}
+                    </span>
+                </div>
+            </div>
+            
+            <div class="seating-grid">
+                {% set room_arrangements = arrangements|selectattr('room_id', 'equalto', room.room_id)|list %}
+                {% if room_arrangements %}
+                    {% set max_row = room_arrangements|map(attribute='seat_row')|max %}
+                    {% set max_col = room_arrangements|map(attribute='seat_col')|max %}
+                    
+                    <div class="grid-container" style="grid-template-columns: repeat({{ max_col }}, 1fr);">
+                        {% for row in range(1, max_row + 1) %}
+                            {% for col in range(1, max_col + 1) %}
+                                {% set seat_arrangement = room_arrangements|selectattr('seat_row', 'equalto', row)|selectattr('seat_col', 'equalto', col)|first %}
+                                <div class="seat {% if seat_arrangement %}occupied{% else %}empty{% endif %}"
+                                     data-row="{{ row }}" data-col="{{ col }}">
+                                    {% if seat_arrangement %}
+                                        <div class="seat-info">
+                                            <div class="seat-number-badge">{{ seat_arrangement.seat_number or (row ~ '-' ~ col) }}</div>
+                                            <div class="student-name">{{ seat_arrangement.student_name }}</div>
+                                            <div class="subject-code">{{ seat_arrangement.subject_code }}</div>
+                                        </div>
+                                    {% else %}
+                                        <div class="seat-number">{{ row }}-{{ col }}</div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-room">
+                        <i class="fas fa-chair"></i>
+                        <p>No students assigned to this room</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Student List Tab -->
+    <div id="student-list" class="tab-content">
+        <div class="card">
+            <div class="card-header">
+                <h3>Student Seating List</h3>
+                <div class="search-box">
+                    <input type="text" id="studentSearch" placeholder="Search students..." class="form-control">
+                    <i class="fas fa-search"></i>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table" id="studentTable">
+                        <thead>
+                            <tr>
+                                <th>Student Name</th>
+                                <th>Subject</th>
+                                <th>Room</th>
+                                <th>Seat Position</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for arrangement in arrangements|sort(attribute='student_name') %}
+                            <tr>
+                                <td>
+                                    <strong>{{ arrangement.student_name }}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge badge-primary">{{ arrangement.subject_code }}</span>
+                                    <small class="d-block text-muted">{{ arrangement.subject_name }}</small>
+                                </td>
+                                <td>{{ arrangement.room_name }}</td>
+                                <td>
+                                    <div class="seat-position">
+                                        <strong class="seat-number-display">{{ arrangement.seat_number or ('R' ~ arrangement.seat_row ~ 'C' ~ arrangement.seat_col) }}</strong>
+                                        <small class="d-block text-muted">Row {{ arrangement.seat_row }}, Col {{ arrangement.seat_col }}</small>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subject Wise Tab -->
+    <div id="subject-wise" class="tab-content">
+        {% for subject_code, subject_arrangements in arrangements|groupby('subject_code') %}
+        <div class="subject-card">
+            <div class="subject-header">
+                <h3>{{ subject_arrangements[0].subject_name }}</h3>
+                <span class="badge badge-primary">{{ subject_code }}</span>
+                <span class="badge badge-info">{{ subject_arrangements|length }} students</span>
+            </div>
+            
+            <div class="subject-rooms">
+                {% for room_id, room_arrangements in subject_arrangements|groupby('room_id') %}
+                <div class="room-summary">
+                    <h4>{{ room_arrangements[0].room_name }}</h4>
+                    <div class="student-grid">
+                        {% for arrangement in room_arrangements|sort(attribute='seat_row') %}
+                        <div class="student-seat">
+                            <div class="student-name">{{ arrangement.student_name }}</div>
+                            <div class="seat-pos">{{ arrangement.seat_number or (arrangement.seat_row ~ '-' ~ arrangement.seat_col) }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% else %}
+<div class="empty-state">
+    <div class="empty-state-icon">
+        <i class="fas fa-chair"></i>
+    </div>
+    <h3>No Seating Arrangement Found</h3>
+    <p>No seating arrangement has been generated for this exam session.</p>
+    <a href="{{ url_for('generate_seating') }}" class="btn btn-primary">
+        <i class="fas fa-cogs"></i> Generate Seating
+    </a>
+</div>
+{% endif %}
+
+<!-- Regenerate Seat Numbers Modal -->
+<div class="modal" id="regenerateModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Regenerate Seat Numbers</h3>
+            <button type="button" class="close" onclick="hideRegenerateModal()">&times;</button>
+        </div>
+    <form method="POST" action="{{ url_for('regenerate_seat_numbers') }}">
+            <div class="modal-body">
+                <p>Choose a new numbering scheme to regenerate seat numbers for this seating arrangement.</p>
+                
+                <input type="hidden" name="exam_date" value="{{ exam_date }}">
+                <input type="hidden" name="session_time" value="{{ session_time }}">
+                
+                <div class="form-group">
+                    <label for="modal_numbering_scheme">Seat Numbering Scheme</label>
+                    <select id="modal_numbering_scheme" name="numbering_scheme" class="form-control" required>
+                        <option value="alpha_numeric">Alphabetic-Numeric (A1, A2, B1, B2...)</option>
+                        <option value="sequential">Sequential (1, 2, 3, 4...)</option>
+                        <option value="row_col">Row-Column (R1C1, R1C2, R2C1...)</option>
+                        <option value="room_prefix">Room Prefix (ROOM1-001, ROOM1-002...)</option>
+                    </select>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Warning:</strong> This will update all seat numbers for this exam session. The change cannot be undone.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="hideRegenerateModal()">Cancel</button>
+                <button type="submit" class="btn btn-warning">
+                    <i class="fas fa-sync-alt"></i> Regenerate Numbers
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.seating-overview {
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.seating-tabs {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.tab-buttons {
+    display: flex;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 1rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.tab-btn:hover {
+    background-color: #e9ecef;
+}
+
+.tab-btn.active {
+    background-color: #007bff;
+    color: white;
+}
+
+.tab-content {
+    display: none;
+    padding: 2rem;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.room-card {
+    margin-bottom: 2rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.room-header {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.room-header h3 {
+    margin: 0;
+    color: #333;
+}
+
+.room-info {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.seating-grid {
+    padding: 1rem;
+}
+
+.grid-container {
+    display: grid;
+    gap: 8px;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.seat {
+    aspect-ratio: 1;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    text-align: center;
+    min-height: 60px;
+    transition: all 0.3s ease;
+}
+
+.seat.occupied {
+    background-color: #007bff;
+    color: white;
+    border-color: #0056b3;
+}
+
+.seat.empty {
+    background-color: #f8f9fa;
+    color: #666;
+}
+
+.seat:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.seat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.seat-number-badge {
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 0.6rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 2px;
+}
+
+.student-name {
+    font-weight: bold;
+    font-size: 0.7rem;
+}
+
+.subject-code {
+    font-size: 0.6rem;
+    opacity: 0.8;
+}
+
+.seat-number-display {
+    color: #007bff;
+    font-size: 1.1rem;
+}
+
+.seat-position {
+    text-align: center;
+}
+
+.seat-number {
+    font-size: 0.7rem;
+    color: #999;
+}
+
+.empty-room {
+    text-align: center;
+    padding: 3rem;
+    color: #666;
+}
+
+.empty-room i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.subject-card {
+    margin-bottom: 2rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.subject-header {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.subject-header h3 {
+    margin: 0;
+    flex: 1;
+}
+
+.subject-rooms {
+    padding: 1rem;
+}
+
+.room-summary {
+    margin-bottom: 1.5rem;
+}
+
+.room-summary h4 {
+    color: #666;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.student-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.5rem;
+}
+
+.student-seat {
+    background-color: #f8f9fa;
+    padding: 0.75rem;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+}
+
+.student-seat .student-name {
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+.student-seat .seat-pos {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.search-box {
+    position: relative;
+    max-width: 300px;
+}
+
+.search-box input {
+    padding-right: 2.5rem;
+}
+
+.search-box i {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+}
+
+@media print {
+    .page-header-actions,
+    .tab-buttons {
+        display: none !important;
+    }
+    
+    .tab-content {
+        display: block !important;
+    }
+    
+    .room-card {
+        page-break-inside: avoid;
+        margin-bottom: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .tab-buttons {
+        flex-direction: column;
+    }
+    
+    .grid-container {
+        grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+    }
+    
+    .seat {
+        min-height: 50px;
+        font-size: 0.7rem;
+    }
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #333;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close:hover {
+    color: #333;
+}
+
+.alert {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+}
+
+.alert i {
+    margin-right: 0.5rem;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Tab switching
+function showTab(tabId) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Remove active class from all buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Show selected tab
+    document.getElementById(tabId).classList.add('active');
+    
+    // Add active class to clicked button
+    event.target.classList.add('active');
+}
+
+// Student search functionality
+document.getElementById('studentSearch')?.addEventListener('keyup', function() {
+    const searchTerm = this.value.toLowerCase();
+    const tableRows = document.querySelectorAll('#studentTable tbody tr');
+    
+    tableRows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchTerm) ? '' : 'none';
+    });
+});
+
+// Print functionality
+function printSeating() {
+    window.print();
+}
+
+// Export functionality
+function exportSeating() {
+    // Create CSV content
+    const arrangements = {{ arrangements|tojson }};
+    let csvContent = "Student Name,Subject Code,Subject Name,Room,Seat Number,Row,Column\n";
+    
+    arrangements.forEach(arr => {
+        const seatNumber = arr.seat_number || `R${arr.seat_row}C${arr.seat_col}`;
+        csvContent += `"${arr.student_name}","${arr.subject_code}","${arr.subject_name}","${arr.room_name}","${seatNumber}",${arr.seat_row},${arr.seat_col}\n`;
+    });
+    
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `seating_arrangement_{{ exam_date }}_{{ session_time }}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+
+// Seat hover effects
+document.querySelectorAll('.seat.occupied').forEach(seat => {
+    seat.addEventListener('mouseenter', function() {
+        const studentName = this.querySelector('.student-name')?.textContent;
+        if (studentName) {
+            this.title = `Student: ${studentName}`;
+        }
+    });
+});
+
+// Modal functions
+function showRegenerateModal() {
+    document.getElementById('regenerateModal').style.display = 'flex';
+}
+
+function hideRegenerateModal() {
+    document.getElementById('regenerateModal').style.display = 'none';
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('regenerateModal');
+    if (event.target === modal) {
+        hideRegenerateModal();
+    }
+});
+
+// Initialize tooltips and other interactive elements
+document.addEventListener('DOMContentLoaded', function() {
+    // Add any initialization code here
+    console.log('Seating arrangement loaded successfully');
+});
+</script>
+{% endblock %}

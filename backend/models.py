@@ -226,7 +226,10 @@ class Room(BaseModel):
         self.is_active = is_active
     
     def save(self):
-        """Save room to database"""
+        """Save room to database with validation"""
+        # Validate room data
+        self._validate()
+        
         if hasattr(self, 'id') and self.id:
             # Update existing room
             query = '''
@@ -247,6 +250,28 @@ class Room(BaseModel):
                      self.building, self.floor, self.room_type, self.facilities, self.is_active)
         
         return db_manager.execute_query(query, params)
+    
+    def _validate(self):
+        """Validate room data"""
+        if not self.room_id or not self.room_id.strip():
+            raise ValueError("Room ID is required")
+        
+        if not self.name or not self.name.strip():
+            raise ValueError("Room name is required")
+        
+        if not isinstance(self.rows, int) or self.rows <= 0:
+            raise ValueError("Rows must be a positive integer")
+        
+        if not isinstance(self.cols, int) or self.cols <= 0:
+            raise ValueError("Columns must be a positive integer")
+        
+        if not isinstance(self.capacity, int) or self.capacity <= 0:
+            raise ValueError("Capacity must be a positive integer")
+        
+        # Validate that capacity matches rows * cols
+        expected_capacity = self.rows * self.cols
+        if self.capacity != expected_capacity:
+            raise ValueError(f"Capacity ({self.capacity}) must equal rows × columns ({expected_capacity})")
     
     def delete(self):
         """Soft delete room"""
@@ -334,6 +359,7 @@ class Exam(BaseModel):
             params = (self.subject_code, self.exam_date, self.start_time, 
                      self.end_time, self.duration, self.session_type, self.exam_type,
                      self.instructions, self.is_active, self.id)
+            return db_manager.execute_query(query, params)
         else:
             # Insert new exam
             query = '''
@@ -344,8 +370,20 @@ class Exam(BaseModel):
             params = (self.subject_code, self.exam_date, self.start_time, 
                      self.end_time, self.duration, self.session_type, self.exam_type,
                      self.instructions, self.is_active)
-        
-        return db_manager.execute_query(query, params)
+            
+            # Execute insert and get the ID
+            conn = db_manager.get_connection()
+            try:
+                cursor = conn.cursor()
+                cursor.execute(query, params)
+                self.id = cursor.lastrowid
+                conn.commit()
+                return cursor.rowcount
+            except Exception as e:
+                conn.rollback()
+                raise e
+            finally:
+                conn.close()
     
     def delete(self):
         """Soft delete exam"""

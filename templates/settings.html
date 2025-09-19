@@ -1,0 +1,793 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Exam Seating System{% endblock %}
+{% block page_title %}Settings{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-content">
+        <h2>System Settings</h2>
+        <p>Configure system preferences and options</p>
+    </div>
+</div>
+
+<div class="settings-tabs">
+    <div class="tab-buttons">
+        <button class="tab-btn active" onclick="showTab('general-settings')">
+            <i class="fas fa-cog"></i> General
+        </button>
+        <button class="tab-btn" onclick="showTab('exam-settings')">
+            <i class="fas fa-calendar-alt"></i> Exam Settings
+        </button>
+        <button class="tab-btn" onclick="showTab('seating-settings')">
+            <i class="fas fa-chair"></i> Seating Rules
+        </button>
+        <button class="tab-btn" onclick="showTab('notification-settings')">
+            <i class="fas fa-bell"></i> Notifications
+        </button>
+        <button class="tab-btn" onclick="showTab('backup-settings')">
+            <i class="fas fa-database"></i> Backup
+        </button>
+    </div>
+
+    <!-- General Settings Tab -->
+    <div id="general-settings" class="tab-content active">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>General System Settings</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" id="generalSettingsForm">
+                            <div class="form-group">
+                                <label for="institution_name">Institution Name</label>
+                                <input type="text" 
+                                       id="institution_name" 
+                                       name="institution_name" 
+                                       class="form-control" 
+                                       value="University of Excellence"
+                                       placeholder="Enter institution name">
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="academic_year">Academic Year</label>
+                                        <input type="text" 
+                                               id="academic_year" 
+                                               name="academic_year" 
+                                               class="form-control" 
+                                               value="2024-2025"
+                                               placeholder="e.g., 2024-2025">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="current_semester">Current Semester</label>
+                                        <select id="current_semester" name="current_semester" class="form-control">
+                                            <option value="1">1st Semester</option>
+                                            <option value="2" selected>2nd Semester</option>
+                                            <option value="3">3rd Semester</option>
+                                            <option value="4">4th Semester</option>
+                                            <option value="5">5th Semester</option>
+                                            <option value="6">6th Semester</option>
+                                            <option value="7">7th Semester</option>
+                                            <option value="8">8th Semester</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="timezone">Timezone</label>
+                                <select id="timezone" name="timezone" class="form-control">
+                                    <option value="UTC">UTC (Coordinated Universal Time)</option>
+                                    <option value="America/New_York">Eastern Time (ET)</option>
+                                    <option value="America/Chicago">Central Time (CT)</option>
+                                    <option value="America/Denver">Mountain Time (MT)</option>
+                                    <option value="America/Los_Angeles" selected>Pacific Time (PT)</option>
+                                    <option value="Europe/London">Greenwich Mean Time (GMT)</option>
+                                    <option value="Asia/Kolkata">India Standard Time (IST)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="date_format">Date Format</label>
+                                <select id="date_format" name="date_format" class="form-control">
+                                    <option value="YYYY-MM-DD" selected>YYYY-MM-DD (2024-03-15)</option>
+                                    <option value="MM/DD/YYYY">MM/DD/YYYY (03/15/2024)</option>
+                                    <option value="DD/MM/YYYY">DD/MM/YYYY (15/03/2024)</option>
+                                    <option value="DD-MM-YYYY">DD-MM-YYYY (15-03-2024)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Save General Settings
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>System Information</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="system-info">
+                            <div class="info-item">
+                                <strong>Version</strong>
+                                <span>1.0.0</span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Last Updated</strong>
+                                <span>March 2024</span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Database</strong>
+                                <span>SQLite</span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Server Status</strong>
+                                <span class="status-badge online">Online</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exam Settings Tab -->
+    <div id="exam-settings" class="tab-content">
+        <div class="card">
+            <div class="card-header">
+                <h3>Examination Settings</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="examSettingsForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="default_exam_duration">Default Exam Duration (minutes)</label>
+                                <input type="number" 
+                                       id="default_exam_duration" 
+                                       name="default_exam_duration" 
+                                       class="form-control" 
+                                       value="120"
+                                       min="30" 
+                                       max="480">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="buffer_time">Buffer Time Between Exams (minutes)</label>
+                                <input type="number" 
+                                       id="buffer_time" 
+                                       name="buffer_time" 
+                                       class="form-control" 
+                                       value="30"
+                                       min="0" 
+                                       max="120">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Available Time Slots</label>
+                        <div class="time-slots">
+                            <div class="time-slot-item">
+                                <input type="checkbox" id="slot_09" name="time_slots[]" value="09:00" checked>
+                                <label for="slot_09">09:00 AM - Morning Session</label>
+                            </div>
+                            <div class="time-slot-item">
+                                <input type="checkbox" id="slot_11" name="time_slots[]" value="11:00" checked>
+                                <label for="slot_11">11:00 AM - Mid-Morning Session</label>
+                            </div>
+                            <div class="time-slot-item">
+                                <input type="checkbox" id="slot_14" name="time_slots[]" value="14:00" checked>
+                                <label for="slot_14">02:00 PM - Afternoon Session</label>
+                            </div>
+                            <div class="time-slot-item">
+                                <input type="checkbox" id="slot_16" name="time_slots[]" value="16:00">
+                                <label for="slot_16">04:00 PM - Evening Session</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="advance_booking_days">Advance Booking (days)</label>
+                                <input type="number" 
+                                       id="advance_booking_days" 
+                                       name="advance_booking_days" 
+                                       class="form-control" 
+                                       value="7"
+                                       min="1" 
+                                       max="365">
+                                <small class="form-text">Minimum days in advance to schedule exams</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="max_exams_per_day">Max Exams Per Day</label>
+                                <input type="number" 
+                                       id="max_exams_per_day" 
+                                       name="max_exams_per_day" 
+                                       class="form-control" 
+                                       value="4"
+                                       min="1" 
+                                       max="10">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Exam Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seating Settings Tab -->
+    <div id="seating-settings" class="tab-content">
+        <div class="card">
+            <div class="card-header">
+                <h3>Seating Arrangement Rules</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="seatingSettingsForm">
+                    <div class="settings-section">
+                        <h4>General Rules</h4>
+                        <div class="rule-options">
+                            <div class="rule-item">
+                                <input type="checkbox" id="separate_departments" name="separate_departments" checked>
+                                <label for="separate_departments">
+                                    <strong>Separate by Department</strong>
+                                    <p>Students from different departments should be separated when possible</p>
+                                </label>
+                            </div>
+                            <div class="rule-item">
+                                <input type="checkbox" id="alternate_seating" name="alternate_seating" checked>
+                                <label for="alternate_seating">
+                                    <strong>Alternate Seating Pattern</strong>
+                                    <p>Use checkerboard pattern to minimize cheating opportunities</p>
+                                </label>
+                            </div>
+                            <div class="rule-item">
+                                <input type="checkbox" id="avoid_conflicts" name="avoid_conflicts" checked>
+                                <label for="avoid_conflicts">
+                                    <strong>Avoid Student Conflicts</strong>
+                                    <p>Prevent students with multiple exams from conflicts</p>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h4>Room Utilization</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="min_room_utilization">Minimum Room Utilization (%)</label>
+                                    <input type="number" 
+                                           id="min_room_utilization" 
+                                           name="min_room_utilization" 
+                                           class="form-control" 
+                                           value="60"
+                                           min="30" 
+                                           max="100">
+                                    <small class="form-text">Minimum percentage of seats to be filled before using a room</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="max_room_capacity">Maximum Room Capacity Usage (%)</label>
+                                    <input type="number" 
+                                           id="max_room_capacity" 
+                                           name="max_room_capacity" 
+                                           class="form-control" 
+                                           value="90"
+                                           min="50" 
+                                           max="100">
+                                    <small class="form-text">Maximum percentage of room capacity to use</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h4>Spacing Rules</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="min_seat_gap">Minimum Seat Gap</label>
+                                    <input type="number" 
+                                           id="min_seat_gap" 
+                                           name="min_seat_gap" 
+                                           class="form-control" 
+                                           value="1"
+                                           min="0" 
+                                           max="3">
+                                    <small class="form-text">Minimum number of empty seats between students</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="row_gap">Row Gap</label>
+                                    <input type="number" 
+                                           id="row_gap" 
+                                           name="row_gap" 
+                                           class="form-control" 
+                                           value="1"
+                                           min="0" 
+                                           max="2">
+                                    <small class="form-text">Minimum number of empty rows between students</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Seating Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Settings Tab -->
+    <div id="notification-settings" class="tab-content">
+        <div class="card">
+            <div class="card-header">
+                <h3>Notification Preferences</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="notificationSettingsForm">
+                    <div class="notification-section">
+                        <h4>Email Notifications</h4>
+                        <div class="notification-options">
+                            <div class="notification-item">
+                                <input type="checkbox" id="email_exam_scheduled" name="email_exam_scheduled" checked>
+                                <label for="email_exam_scheduled">
+                                    <strong>Exam Scheduled</strong>
+                                    <p>Notify when new exams are scheduled</p>
+                                </label>
+                            </div>
+                            <div class="notification-item">
+                                <input type="checkbox" id="email_seating_generated" name="email_seating_generated" checked>
+                                <label for="email_seating_generated">
+                                    <strong>Seating Generated</strong>
+                                    <p>Notify when seating arrangements are generated</p>
+                                </label>
+                            </div>
+                            <div class="notification-item">
+                                <input type="checkbox" id="email_system_errors" name="email_system_errors" checked>
+                                <label for="email_system_errors">
+                                    <strong>System Errors</strong>
+                                    <p>Notify about system errors and issues</p>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="notification-section">
+                        <h4>System Alerts</h4>
+                        <div class="notification-options">
+                            <div class="notification-item">
+                                <input type="checkbox" id="alert_low_storage" name="alert_low_storage" checked>
+                                <label for="alert_low_storage">
+                                    <strong>Low Storage Space</strong>
+                                    <p>Alert when storage space is running low</p>
+                                </label>
+                            </div>
+                            <div class="notification-item">
+                                <input type="checkbox" id="alert_backup_failed" name="alert_backup_failed" checked>
+                                <label for="alert_backup_failed">
+                                    <strong>Backup Failed</strong>
+                                    <p>Alert when automatic backups fail</p>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Notification Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Backup Settings Tab -->
+    <div id="backup-settings" class="tab-content">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Backup Configuration</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" id="backupSettingsForm">
+                            <div class="form-group">
+                                <label for="auto_backup">Automatic Backup</label>
+                                <select id="auto_backup" name="auto_backup" class="form-control">
+                                    <option value="disabled">Disabled</option>
+                                    <option value="daily" selected>Daily</option>
+                                    <option value="weekly">Weekly</option>
+                                    <option value="monthly">Monthly</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="backup_time">Backup Time</label>
+                                <input type="time" 
+                                       id="backup_time" 
+                                       name="backup_time" 
+                                       class="form-control" 
+                                       value="02:00">
+                                <small class="form-text">Time when automatic backups should run</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="backup_retention">Backup Retention (days)</label>
+                                <input type="number" 
+                                       id="backup_retention" 
+                                       name="backup_retention" 
+                                       class="form-control" 
+                                       value="30"
+                                       min="1" 
+                                       max="365">
+                                <small class="form-text">Number of days to keep backup files</small>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Save Backup Settings
+                                </button>
+                                <button type="button" class="btn btn-success" onclick="createBackup()">
+                                    <i class="fas fa-download"></i> Create Backup Now
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Recent Backups</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="backup-list">
+                            <div class="backup-item">
+                                <div class="backup-info">
+                                    <strong>backup_2024_03_15.db</strong>
+                                    <small class="d-block text-muted">Today at 2:00 AM</small>
+                                </div>
+                                <div class="backup-actions">
+                                    <button class="btn btn-sm btn-outline-primary" title="Download">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="backup-item">
+                                <div class="backup-info">
+                                    <strong>backup_2024_03_14.db</strong>
+                                    <small class="d-block text-muted">Yesterday at 2:00 AM</small>
+                                </div>
+                                <div class="backup-actions">
+                                    <button class="btn btn-sm btn-outline-primary" title="Download">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="backup-item">
+                                <div class="backup-info">
+                                    <strong>backup_2024_03_13.db</strong>
+                                    <small class="d-block text-muted">2 days ago at 2:00 AM</small>
+                                </div>
+                                <div class="backup-actions">
+                                    <button class="btn btn-sm btn-outline-primary" title="Download">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.settings-tabs {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.tab-buttons {
+    display: flex;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+    overflow-x: auto;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 1rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    white-space: nowrap;
+    min-width: 150px;
+}
+
+.tab-btn:hover {
+    background-color: #e9ecef;
+}
+
+.tab-btn.active {
+    background-color: #007bff;
+    color: white;
+}
+
+.tab-content {
+    display: none;
+    padding: 2rem;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.system-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-badge.online {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.time-slots {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.time-slot-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.time-slot-item input[type="checkbox"] {
+    margin: 0;
+}
+
+.time-slot-item label {
+    margin: 0;
+    cursor: pointer;
+}
+
+.settings-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.settings-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.settings-section h4 {
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.rule-options,
+.notification-options {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.rule-item,
+.notification-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.rule-item:hover,
+.notification-item:hover {
+    border-color: #007bff;
+    background-color: #f8f9fa;
+}
+
+.rule-item input[type="checkbox"],
+.notification-item input[type="checkbox"] {
+    margin-top: 0.25rem;
+}
+
+.rule-item label,
+.notification-item label {
+    flex: 1;
+    margin: 0;
+    cursor: pointer;
+}
+
+.rule-item label p,
+.notification-item label p {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: normal;
+}
+
+.backup-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.backup-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.backup-info {
+    flex: 1;
+}
+
+.backup-actions {
+    margin-left: 1rem;
+}
+
+@media (max-width: 768px) {
+    .tab-buttons {
+        flex-direction: column;
+    }
+    
+    .tab-btn {
+        min-width: auto;
+    }
+    
+    .rule-item,
+    .notification-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .rule-item input[type="checkbox"],
+    .notification-item input[type="checkbox"] {
+        margin-top: 0;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Tab switching
+function showTab(tabId) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Remove active class from all buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Show selected tab
+    document.getElementById(tabId).classList.add('active');
+    
+    // Add active class to clicked button
+    event.target.classList.add('active');
+}
+
+// Create backup function
+function createBackup() {
+    if (confirm('Create a backup now? This may take a few moments.')) {
+        // Show loading state
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Backup...';
+        btn.disabled = true;
+        
+        // Simulate backup creation (replace with actual implementation)
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            alert('Backup created successfully!');
+        }, 3000);
+    }
+}
+
+// Form submissions
+document.getElementById('generalSettingsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    alert('General settings saved successfully!');
+});
+
+document.getElementById('examSettingsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    alert('Exam settings saved successfully!');
+});
+
+document.getElementById('seatingSettingsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    alert('Seating settings saved successfully!');
+});
+
+document.getElementById('notificationSettingsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    alert('Notification settings saved successfully!');
+});
+
+document.getElementById('backupSettingsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    alert('Backup settings saved successfully!');
+});
+
+// Initialize tooltips and other interactive elements
+document.addEventListener('DOMContentLoaded', function() {
+    // Add any initialization code here
+    console.log('Settings page loaded successfully');
+});
+</script>
+{% endblock %}

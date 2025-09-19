@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}Schedule Exam - Exam Seating System{% endblock %}
+{% block page_title %}Schedule Exam{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-content">
+        <h2>Schedule New Exam</h2>
+        <p>Add a new examination to the schedule</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="{{ url_for('exams') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Exams
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3>Exam Details</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="addExamForm">
+                    <div class="form-group">
+                        <label for="subject_code">Subject *</label>
+                        <select id="subject_code" name="subject_code" class="form-control" required>
+                            <option value="">Select Subject</option>
+                            {% for subject in subjects %}
+                            <option value="{{ subject.subject_code }}" 
+                                    data-name="{{ subject.subject_name }}"
+                                    data-department="{{ subject.department }}">
+                                {{ subject.subject_code }} - {{ subject.subject_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="exam_date">Exam Date *</label>
+                                <input type="date" 
+                                       id="exam_date" 
+                                       name="exam_date" 
+                                       class="form-control" 
+                                       required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="duration">Duration (minutes) *</label>
+                                <select id="duration" name="duration" class="form-control" required>
+                                    <option value="">Select Duration</option>
+                                    <option value="60">1 Hour (60 min)</option>
+                                    <option value="90">1.5 Hours (90 min)</option>
+                                    <option value="120">2 Hours (120 min)</option>
+                                    <option value="150">2.5 Hours (150 min)</option>
+                                    <option value="180">3 Hours (180 min)</option>
+                                    <option value="240">4 Hours (240 min)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="start_time">Start Time *</label>
+                                <select id="start_time" name="start_time" class="form-control" required>
+                                    <option value="">Select Start Time</option>
+                                    <option value="09:00">09:00 AM</option>
+                                    <option value="10:00">10:00 AM</option>
+                                    <option value="11:00">11:00 AM</option>
+                                    <option value="12:00">12:00 PM</option>
+                                    <option value="13:00">01:00 PM</option>
+                                    <option value="14:00">02:00 PM</option>
+                                    <option value="15:00">03:00 PM</option>
+                                    <option value="16:00">04:00 PM</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="end_time">End Time</label>
+                                <input type="time" 
+                                       id="end_time" 
+                                       name="end_time" 
+                                       class="form-control" 
+                                       readonly>
+                                <small class="form-text">Automatically calculated based on start time and duration</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="instructions">Special Instructions</label>
+                        <textarea id="instructions" 
+                                  name="instructions" 
+                                  class="form-control" 
+                                  rows="3"
+                                  placeholder="Any special instructions for this exam (optional)"></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-calendar-plus"></i> Schedule Exam
+                        </button>
+                        <a href="{{ url_for('exams') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3>Selected Subject</h3>
+            </div>
+            <div class="card-body" id="subjectInfo">
+                <div class="empty-state-small">
+                    <i class="fas fa-book"></i>
+                    <p>Select a subject to view details</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Exam Guidelines</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-list">
+                    <div class="info-item">
+                        <i class="fas fa-calendar text-primary"></i>
+                        <div>
+                            <strong>Date Selection</strong>
+                            <p>Choose a date that doesn't conflict with other exams.</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-clock text-success"></i>
+                        <div>
+                            <strong>Time Slots</strong>
+                            <p>Standard time slots are available to avoid conflicts.</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-hourglass text-warning"></i>
+                        <div>
+                            <strong>Duration</strong>
+                            <p>Select appropriate duration based on subject requirements.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Calculate end time based on start time and duration
+function calculateEndTime() {
+    const startTime = document.getElementById('start_time').value;
+    const duration = parseInt(document.getElementById('duration').value);
+    
+    if (startTime && duration) {
+        const [hours, minutes] = startTime.split(':').map(Number);
+        const startDate = new Date();
+        startDate.setHours(hours, minutes, 0, 0);
+        
+        const endDate = new Date(startDate.getTime() + duration * 60000);
+        const endTime = endDate.toTimeString().substring(0, 5);
+        
+        document.getElementById('end_time').value = endTime;
+    }
+}
+
+// Update subject information display
+function updateSubjectInfo() {
+    const select = document.getElementById('subject_code');
+    const selectedOption = select.options[select.selectedIndex];
+    const infoDiv = document.getElementById('subjectInfo');
+    
+    if (selectedOption.value) {
+        const subjectName = selectedOption.getAttribute('data-name');
+        const department = selectedOption.getAttribute('data-department');
+        
+        infoDiv.innerHTML = `
+            <div class="info-list">
+                <div class="info-item">
+                    <i class="fas fa-code text-primary"></i>
+                    <div>
+                        <strong>Subject Code</strong>
+                        <p>${selectedOption.value}</p>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-book text-success"></i>
+                    <div>
+                        <strong>Subject Name</strong>
+                        <p>${subjectName}</p>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-building text-info"></i>
+                    <div>
+                        <strong>Department</strong>
+                        <p>${department}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else {
+        infoDiv.innerHTML = `
+            <div class="empty-state-small">
+                <i class="fas fa-book"></i>
+                <p>Select a subject to view details</p>
+            </div>
+        `;
+    }
+}
+
+// Event listeners
+document.getElementById('start_time').addEventListener('change', calculateEndTime);
+document.getElementById('duration').addEventListener('change', calculateEndTime);
+document.getElementById('subject_code').addEventListener('change', updateSubjectInfo);
+
+// Set minimum date to today
+document.getElementById('exam_date').min = new Date().toISOString().split('T')[0];
+
+// Form validation
+document.getElementById('addExamForm').addEventListener('submit', function(e) {
+    const subjectCode = document.getElementById('subject_code').value;
+    const examDate = document.getElementById('exam_date').value;
+    const startTime = document.getElementById('start_time').value;
+    const duration = document.getElementById('duration').value;
+    
+    if (!subjectCode || !examDate || !startTime || !duration) {
+        e.preventDefault();
+        alert('Please fill in all required fields.');
+        return false;
+    }
+    
+    // Check if exam date is not in the past
+    const selectedDate = new Date(examDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (selectedDate < today) {
+        e.preventDefault();
+        alert('Exam date cannot be in the past.');
+        return false;
+    }
+});
+</script>
+{% endblock %}

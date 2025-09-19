@@ -1,0 +1,402 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Invigilator - Exam Seating System{% endblock %}
+{% block page_title %}Edit Invigilator{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-content">
+        <h2>Edit Invigilator</h2>
+        <p>Update invigilator information</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="{{ url_for('invigilators') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Invigilators
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3>Invigilator Information</h3>
+                <div class="card-subtitle">
+                    Staff ID: <span class="badge badge-primary">{{ invigilator.staff_id }}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="editInvigilatorForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="staff_id">Staff ID</label>
+                                <input type="text" 
+                                       id="staff_id" 
+                                       name="staff_id" 
+                                       class="form-control" 
+                                       value="{{ invigilator.staff_id }}"
+                                       readonly>
+                                <small class="form-text">Staff ID cannot be changed</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="employee_id">Employee ID</label>
+                                <input type="text" 
+                                       id="employee_id" 
+                                       name="employee_id" 
+                                       class="form-control" 
+                                       value="{{ invigilator.employee_id or '' }}"
+                                       placeholder="Enter employee ID">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="name">Full Name *</label>
+                        <input type="text" 
+                               id="name" 
+                               name="name" 
+                               class="form-control" 
+                               value="{{ invigilator.name }}"
+                               placeholder="Enter full name"
+                               required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="email">Email Address</label>
+                                <input type="email" 
+                                       id="email" 
+                                       name="email" 
+                                       class="form-control" 
+                                       value="{{ invigilator.email or '' }}"
+                                       placeholder="staff@example.com">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="phone">Phone Number</label>
+                                <input type="tel" 
+                                       id="phone" 
+                                       name="phone" 
+                                       class="form-control" 
+                                       value="{{ invigilator.phone or '' }}"
+                                       placeholder="+1234567890">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="department">Department *</label>
+                                <select id="department" name="department" class="form-control" required>
+                                    <option value="">Select Department</option>
+                                    <option value="Computer Science" {% if invigilator.department == 'Computer Science' %}selected{% endif %}>Computer Science</option>
+                                    <option value="Information Technology" {% if invigilator.department == 'Information Technology' %}selected{% endif %}>Information Technology</option>
+                                    <option value="Electronics" {% if invigilator.department == 'Electronics' %}selected{% endif %}>Electronics</option>
+                                    <option value="Mechanical" {% if invigilator.department == 'Mechanical' %}selected{% endif %}>Mechanical</option>
+                                    <option value="Civil" {% if invigilator.department == 'Civil' %}selected{% endif %}>Civil</option>
+                                    <option value="Electrical" {% if invigilator.department == 'Electrical' %}selected{% endif %}>Electrical</option>
+                                    <option value="Mathematics" {% if invigilator.department == 'Mathematics' %}selected{% endif %}>Mathematics</option>
+                                    <option value="Physics" {% if invigilator.department == 'Physics' %}selected{% endif %}>Physics</option>
+                                    <option value="Chemistry" {% if invigilator.department == 'Chemistry' %}selected{% endif %}>Chemistry</option>
+                                    <option value="English" {% if invigilator.department == 'English' %}selected{% endif %}>English</option>
+                                    <option value="Management" {% if invigilator.department == 'Management' %}selected{% endif %}>Management</option>
+                                    <option value="Administration" {% if invigilator.department == 'Administration' %}selected{% endif %}>Administration</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="designation">Designation</label>
+                                <select id="designation" name="designation" class="form-control">
+                                    <option value="">Select Designation</option>
+                                    <option value="Professor" {% if invigilator.designation == 'Professor' %}selected{% endif %}>Professor</option>
+                                    <option value="Associate Professor" {% if invigilator.designation == 'Associate Professor' %}selected{% endif %}>Associate Professor</option>
+                                    <option value="Assistant Professor" {% if invigilator.designation == 'Assistant Professor' %}selected{% endif %}>Assistant Professor</option>
+                                    <option value="Lecturer" {% if invigilator.designation == 'Lecturer' %}selected{% endif %}>Lecturer</option>
+                                    <option value="Senior Lecturer" {% if invigilator.designation == 'Senior Lecturer' %}selected{% endif %}>Senior Lecturer</option>
+                                    <option value="Teaching Assistant" {% if invigilator.designation == 'Teaching Assistant' %}selected{% endif %}>Teaching Assistant</option>
+                                    <option value="Lab Assistant" {% if invigilator.designation == 'Lab Assistant' %}selected{% endif %}>Lab Assistant</option>
+                                    <option value="Administrative Staff" {% if invigilator.designation == 'Administrative Staff' %}selected{% endif %}>Administrative Staff</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="experience_years">Experience (Years)</label>
+                                <input type="number" 
+                                       id="experience_years" 
+                                       name="experience_years" 
+                                       class="form-control" 
+                                       value="{{ invigilator.experience_years or '' }}"
+                                       min="0" 
+                                       max="50"
+                                       placeholder="Years of experience">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="status">Status</label>
+                                <select id="status" name="status" class="form-control">
+                                    <option value="active" {% if invigilator.status == 'active' %}selected{% endif %}>Active</option>
+                                    <option value="inactive" {% if invigilator.status == 'inactive' %}selected{% endif %}>Inactive</option>
+                                    <option value="on_leave" {% if invigilator.status == 'on_leave' %}selected{% endif %}>On Leave</option>
+                                    <option value="retired" {% if invigilator.status == 'retired' %}selected{% endif %}>Retired</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="specialization">Specialization/Subjects</label>
+                        <textarea id="specialization" 
+                                  name="specialization" 
+                                  class="form-control" 
+                                  rows="2"
+                                  placeholder="Areas of specialization or subjects taught">{{ invigilator.specialization or '' }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notes">Additional Notes</label>
+                        <textarea id="notes" 
+                                  name="notes" 
+                                  class="form-control" 
+                                  rows="3"
+                                  placeholder="Any additional notes or comments">{{ invigilator.notes or '' }}</textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Update Invigilator
+                        </button>
+                        <a href="{{ url_for('invigilators') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3>Current Information</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-list">
+                    <div class="info-item">
+                        <i class="fas fa-id-badge text-primary"></i>
+                        <div>
+                            <strong>Staff ID</strong>
+                            <p>{{ invigilator.staff_id }}</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-user-tie text-success"></i>
+                        <div>
+                            <strong>Name</strong>
+                            <p>{{ invigilator.name }}</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-building text-info"></i>
+                        <div>
+                            <strong>Department</strong>
+                            <p>{{ invigilator.department }}</p>
+                        </div>
+                    </div>
+                    {% if invigilator.designation %}
+                    <div class="info-item">
+                        <i class="fas fa-briefcase text-warning"></i>
+                        <div>
+                            <strong>Designation</strong>
+                            <p>{{ invigilator.designation }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if invigilator.email %}
+                    <div class="info-item">
+                        <i class="fas fa-envelope text-secondary"></i>
+                        <div>
+                            <strong>Email</strong>
+                            <p>{{ invigilator.email }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="info-item">
+                        <i class="fas fa-circle {% if invigilator.status == 'active' %}text-success{% else %}text-danger{% endif %}"></i>
+                        <div>
+                            <strong>Status</strong>
+                            <p>{{ invigilator.status|title }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Actions</h3>
+            </div>
+            <div class="card-body">
+                <button class="btn btn-danger btn-block" onclick="deleteInvigilator('{{ invigilator.staff_id }}')">
+                    <i class="fas fa-trash"></i> Delete Invigilator
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Invigilation History</h3>
+            </div>
+            <div class="card-body">
+                <div class="invigilation-history">
+                    <!-- This would be populated with actual invigilation history -->
+                    <div class="empty-state-small">
+                        <i class="fas fa-history"></i>
+                        <p>No invigilation history available</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Quick Stats</h3>
+            </div>
+            <div class="card-body">
+                <div class="stats-mini">
+                    <div class="stat-mini">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Exams Invigilated</div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="stat-value">{{ invigilator.experience_years or 0 }}</div>
+                        <div class="stat-label">Years Experience</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal" id="deleteModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Confirm Delete</h3>
+            <button class="modal-close" onclick="closeModal('deleteModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete this invigilator? This action cannot be undone and will affect all related records.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('deleteModal')">Cancel</button>
+            <form id="deleteForm" method="POST" style="display: inline;">
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.stats-mini {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.stat-mini {
+    text-align: center;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.stat-mini .stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.stat-mini .stat-label {
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 0.25rem;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Form validation
+document.getElementById('editInvigilatorForm').addEventListener('submit', function(e) {
+    const name = document.getElementById('name').value.trim();
+    const department = document.getElementById('department').value;
+    
+    if (!name || !department) {
+        e.preventDefault();
+        alert('Please fill in all required fields.');
+        return false;
+    }
+    
+    // Validate email format if provided
+    const email = document.getElementById('email').value.trim();
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        e.preventDefault();
+        alert('Please enter a valid email address.');
+        return false;
+    }
+});
+
+// Delete invigilator function
+function deleteInvigilator(staffId) {
+    document.getElementById('deleteForm').action = `/invigilators/delete/${staffId}`;
+    document.getElementById('deleteModal').style.display = 'flex';
+}
+
+// Modal functions
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('deleteModal');
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Auto-format phone number
+document.getElementById('phone').addEventListener('input', function() {
+    let value = this.value.replace(/\D/g, '');
+    if (value.length > 0) {
+        if (value.length <= 3) {
+            value = value;
+        } else if (value.length <= 6) {
+            value = value.slice(0, 3) + '-' + value.slice(3);
+        } else {
+            value = value.slice(0, 3) + '-' + value.slice(3, 6) + '-' + value.slice(6, 10);
+        }
+    }
+    this.value = value;
+});
+
+// Auto-uppercase staff ID
+document.getElementById('staff_id').addEventListener('input', function() {
+    this.value = this.value.toUpperCase();
+});
+</script>
+{% endblock %}

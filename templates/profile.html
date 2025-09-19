@@ -1,0 +1,654 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - Exam Seating System{% endblock %}
+{% block page_title %}Profile{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-content">
+        <h2>Administrator Profile</h2>
+        <p>Manage your account information and preferences</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3>Personal Information</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="profileForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="admin_id">Administrator ID</label>
+                                <input type="text" 
+                                       id="admin_id" 
+                                       name="admin_id" 
+                                       class="form-control" 
+                                       value="{{ session.admin_id or 'admin' }}"
+                                       readonly>
+                                <small class="form-text">Administrator ID cannot be changed</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="username">Username</label>
+                                <input type="text" 
+                                       id="username" 
+                                       name="username" 
+                                       class="form-control" 
+                                       value="{{ session.admin_name or 'Administrator' }}"
+                                       readonly>
+                                <small class="form-text">Username cannot be changed</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="full_name">Full Name *</label>
+                        <input type="text" 
+                               id="full_name" 
+                               name="full_name" 
+                               class="form-control" 
+                               value="{{ session.admin_name or 'Administrator' }}"
+                               placeholder="Enter your full name"
+                               required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="email">Email Address</label>
+                                <input type="email" 
+                                       id="email" 
+                                       name="email" 
+                                       class="form-control" 
+                                       placeholder="admin@example.com">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="phone">Phone Number</label>
+                                <input type="tel" 
+                                       id="phone" 
+                                       name="phone" 
+                                       class="form-control" 
+                                       placeholder="+1234567890">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="department">Department</label>
+                        <select id="department" name="department" class="form-control">
+                            <option value="">Select Department</option>
+                            <option value="Administration">Administration</option>
+                            <option value="Academic Affairs">Academic Affairs</option>
+                            <option value="Student Affairs">Student Affairs</option>
+                            <option value="IT Department">IT Department</option>
+                            <option value="Examination Cell">Examination Cell</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="designation">Designation</label>
+                        <input type="text" 
+                               id="designation" 
+                               name="designation" 
+                               class="form-control" 
+                               placeholder="e.g., System Administrator, Exam Controller">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Update Profile
+                        </button>
+                        <button type="reset" class="btn btn-secondary">
+                            <i class="fas fa-undo"></i> Reset
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Change Password</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="passwordForm" action="{{ url_for('profile') }}?action=change_password">
+                    <div class="form-group">
+                        <label for="current_password">Current Password *</label>
+                        <input type="password" 
+                               id="current_password" 
+                               name="current_password" 
+                               class="form-control" 
+                               required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="new_password">New Password *</label>
+                                <input type="password" 
+                                       id="new_password" 
+                                       name="new_password" 
+                                       class="form-control" 
+                                       minlength="6"
+                                       required>
+                                <small class="form-text">Minimum 6 characters</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="confirm_password">Confirm New Password *</label>
+                                <input type="password" 
+                                       id="confirm_password" 
+                                       name="confirm_password" 
+                                       class="form-control" 
+                                       required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="password-strength" id="passwordStrength" style="display: none;">
+                        <div class="strength-bar">
+                            <div class="strength-fill" id="strengthFill"></div>
+                        </div>
+                        <div class="strength-text" id="strengthText"></div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-key"></i> Change Password
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3>Account Summary</h3>
+            </div>
+            <div class="card-body">
+                <div class="profile-avatar">
+                    <div class="avatar-circle">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <h4>{{ session.admin_name or 'Administrator' }}</h4>
+                    <p class="text-muted">System Administrator</p>
+                </div>
+
+                <div class="account-stats">
+                    <div class="stat-item">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-check text-success"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value">-</div>
+                            <div class="stat-label">Last Login</div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock text-info"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value">-</div>
+                            <div class="stat-label">Session Time</div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon">
+                            <i class="fas fa-shield-alt text-primary"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value">Admin</div>
+                            <div class="stat-label">Access Level</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Security Settings</h3>
+            </div>
+            <div class="card-body">
+                <div class="security-options">
+                    <div class="security-item">
+                        <div class="security-info">
+                            <strong>Two-Factor Authentication</strong>
+                            <p>Add an extra layer of security</p>
+                        </div>
+                        <div class="security-action">
+                            <button class="btn btn-sm btn-outline-primary" disabled>
+                                Enable
+                            </button>
+                        </div>
+                    </div>
+                    <div class="security-item">
+                        <div class="security-info">
+                            <strong>Login Notifications</strong>
+                            <p>Get notified of login attempts</p>
+                        </div>
+                        <div class="security-action">
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="security-item">
+                        <div class="security-info">
+                            <strong>Session Timeout</strong>
+                            <p>Auto-logout after inactivity</p>
+                        </div>
+                        <div class="security-action">
+                            <select class="form-control form-control-sm">
+                                <option>30 minutes</option>
+                                <option selected>1 hour</option>
+                                <option>2 hours</option>
+                                <option>4 hours</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Activity Log</h3>
+            </div>
+            <div class="card-body">
+                <div class="activity-log">
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-sign-in-alt text-success"></i>
+                        </div>
+                        <div class="activity-info">
+                            <strong>Login</strong>
+                            <small class="d-block text-muted">Today at 9:30 AM</small>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-user-plus text-info"></i>
+                        </div>
+                        <div class="activity-info">
+                            <strong>Added Student</strong>
+                            <small class="d-block text-muted">Yesterday at 3:45 PM</small>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-cogs text-warning"></i>
+                        </div>
+                        <div class="activity-info">
+                            <strong>Generated Seating</strong>
+                            <small class="d-block text-muted">2 days ago at 11:20 AM</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.profile-avatar {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.avatar-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+}
+
+.avatar-circle i {
+    font-size: 2rem;
+    color: white;
+}
+
+.profile-avatar h4 {
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.account-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.stat-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.stat-info {
+    flex: 1;
+}
+
+.stat-value {
+    font-weight: bold;
+    color: #333;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.security-options {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.security-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+}
+
+.security-info {
+    flex: 1;
+}
+
+.security-info strong {
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.security-info p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.security-action {
+    margin-left: 1rem;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #007bff;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+.activity-log {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.activity-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.activity-info {
+    flex: 1;
+}
+
+.password-strength {
+    margin-top: 1rem;
+}
+
+.strength-bar {
+    width: 100%;
+    height: 8px;
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.strength-fill {
+    height: 100%;
+    transition: all 0.3s ease;
+    border-radius: 4px;
+}
+
+.strength-text {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.strength-weak .strength-fill {
+    width: 25%;
+    background-color: #dc3545;
+}
+
+.strength-fair .strength-fill {
+    width: 50%;
+    background-color: #ffc107;
+}
+
+.strength-good .strength-fill {
+    width: 75%;
+    background-color: #17a2b8;
+}
+
+.strength-strong .strength-fill {
+    width: 100%;
+    background-color: #28a745;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Password strength checker
+function checkPasswordStrength(password) {
+    const strengthDiv = document.getElementById('passwordStrength');
+    const strengthFill = document.getElementById('strengthFill');
+    const strengthText = document.getElementById('strengthText');
+    
+    if (password.length === 0) {
+        strengthDiv.style.display = 'none';
+        return;
+    }
+    
+    strengthDiv.style.display = 'block';
+    
+    let score = 0;
+    let feedback = '';
+    
+    // Length check
+    if (password.length >= 8) score += 1;
+    if (password.length >= 12) score += 1;
+    
+    // Character variety checks
+    if (/[a-z]/.test(password)) score += 1;
+    if (/[A-Z]/.test(password)) score += 1;
+    if (/[0-9]/.test(password)) score += 1;
+    if (/[^A-Za-z0-9]/.test(password)) score += 1;
+    
+    // Set strength class and text
+    strengthDiv.className = 'password-strength';
+    if (score <= 2) {
+        strengthDiv.classList.add('strength-weak');
+        strengthText.textContent = 'Weak password';
+        strengthText.style.color = '#dc3545';
+    } else if (score <= 3) {
+        strengthDiv.classList.add('strength-fair');
+        strengthText.textContent = 'Fair password';
+        strengthText.style.color = '#ffc107';
+    } else if (score <= 4) {
+        strengthDiv.classList.add('strength-good');
+        strengthText.textContent = 'Good password';
+        strengthText.style.color = '#17a2b8';
+    } else {
+        strengthDiv.classList.add('strength-strong');
+        strengthText.textContent = 'Strong password';
+        strengthText.style.color = '#28a745';
+    }
+}
+
+// Password confirmation validation
+function validatePasswordMatch() {
+    const newPassword = document.getElementById('new_password').value;
+    const confirmPassword = document.getElementById('confirm_password').value;
+    const confirmInput = document.getElementById('confirm_password');
+    
+    if (confirmPassword && newPassword !== confirmPassword) {
+        confirmInput.setCustomValidity('Passwords do not match');
+        confirmInput.classList.add('is-invalid');
+    } else {
+        confirmInput.setCustomValidity('');
+        confirmInput.classList.remove('is-invalid');
+    }
+}
+
+// Event listeners
+document.getElementById('new_password').addEventListener('input', function() {
+    checkPasswordStrength(this.value);
+    validatePasswordMatch();
+});
+
+document.getElementById('confirm_password').addEventListener('input', validatePasswordMatch);
+
+// Form validations
+document.getElementById('profileForm').addEventListener('submit', function(e) {
+    const fullName = document.getElementById('full_name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    
+    if (!fullName) {
+        e.preventDefault();
+        alert('Please enter your full name.');
+        return false;
+    }
+    
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        e.preventDefault();
+        alert('Please enter a valid email address.');
+        return false;
+    }
+});
+
+document.getElementById('passwordForm').addEventListener('submit', function(e) {
+    const currentPassword = document.getElementById('current_password').value;
+    const newPassword = document.getElementById('new_password').value;
+    const confirmPassword = document.getElementById('confirm_password').value;
+    
+    if (!currentPassword || !newPassword || !confirmPassword) {
+        e.preventDefault();
+        alert('Please fill in all password fields.');
+        return false;
+    }
+    
+    if (newPassword !== confirmPassword) {
+        e.preventDefault();
+        alert('New passwords do not match.');
+        return false;
+    }
+    
+    if (newPassword.length < 6) {
+        e.preventDefault();
+        alert('New password must be at least 6 characters long.');
+        return false;
+    }
+});
+
+// Auto-format phone number
+document.getElementById('phone').addEventListener('input', function() {
+    let value = this.value.replace(/\D/g, '');
+    if (value.length > 0) {
+        if (value.length <= 3) {
+            value = value;
+        } else if (value.length <= 6) {
+            value = value.slice(0, 3) + '-' + value.slice(3);
+        } else {
+            value = value.slice(0, 3) + '-' + value.slice(3, 6) + '-' + value.slice(6, 10);
+        }
+    }
+    this.value = value;
+});
+</script>
+{% endblock %}

@@ -16,6 +16,12 @@
                 <a href="{{ url_for('import_students') }}" class="btn btn-secondary mr-2">
                     <i class="fas fa-file-upload"></i> Import CSV
                 </a>
+                <a href="{{ url_for('assign_subjects_bulk') }}" class="btn btn-warning mr-2">
+                    <i class="fas fa-upload"></i> CSV Assign Subjects
+                </a>
+                <a href="{{ url_for('bulk_assign_ui') }}" class="btn btn-info mr-2">
+                    <i class="fas fa-tasks"></i> UI Bulk Assign
+                </a>
                 <a href="{{ url_for('add_student') }}" class="btn btn-primary">
                     <i class="fas fa-plus"></i> Add Student
                 </a>
@@ -231,7 +237,7 @@
         <div class="modal-footer">
             <button class="btn btn-secondary" data-modal-close>Cancel</button>
             <form id="deleteForm" method="POST" style="display: inline;">
-                <button type="submit" class="btn btn-danger">
+                <button type="submit" formaction="{{ url_for('delete_student', student_id='STUDENT_ID') }}" class="btn btn-danger">
                     <i class="fas fa-trash"></i> Delete Student
                 </button>
             </form>

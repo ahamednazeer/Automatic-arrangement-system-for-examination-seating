@@ -233,6 +233,135 @@ def delete_student(student_id):
     
     return redirect(url_for('students.list_students'))
 
+@students_bp.route('/import', methods=['GET', 'POST'])
+@login_required
+def import_students():
+    if request.method == 'POST':
+        try:
+            if 'file' not in request.files:
+                flash('No file uploaded', 'error')
+                return render_template('students/import.html')
+            
+            file = request.files['file']
+            if file.filename == '':
+                flash('No file selected', 'error')
+                return render_template('students/import.html')
+            
+            if not file.filename.endswith('.csv'):
+                flash('Only CSV files are supported', 'error')
+                return render_template('students/import.html')
+            
+            # Process CSV file
+            import csv
+            import io
+            
+            stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
+            csv_input = csv.DictReader(stream)
+            
+            imported_count = 0
+            errors = []
+            
+            # Check for required headers
+            required_headers = ['student_id', 'name', 'department', 'semester']
+            headers = csv_input.fieldnames
+            if not headers:
+                flash('Invalid CSV format: No headers found', 'error')
+                return render_template('students/import.html')
+            
+            # Convert headers to lowercase for case-insensitive matching
+            headers_lower = [h.lower().strip() for h in headers]
+            missing_headers = []
+            for req_header in required_headers:
+                if req_header not in headers_lower:
+                    missing_headers.append(req_header)
+            
+            if missing_headers:
+                flash(f'Invalid CSV format: Missing required headers: {", ".join(missing_headers)}', 'error')
+                return render_template('students/import.html')
+            
+            for row_num, row in enumerate(csv_input, start=2):
+                try:
+                    # Create a case-insensitive row dict
+                    row_dict = {k.lower().strip(): v.strip() if v else '' for k, v in row.items()}
+                    
+                    student = Student(
+                        student_id=row_dict.get('student_id', ''),
+                        name=row_dict.get('name', ''),
+                        department=row_dict.get('department', ''),
+                        semester=int(row_dict.get('semester', 0)) if row_dict.get('semester', '').isdigit() else 0,
+                        email=row_dict.get('email', ''),
+                        phone=row_dict.get('phone', '')
+                    )
+                    
+                    if not student.student_id or not student.name:
+                        errors.append(f'Row {row_num}: Student ID and Name are required')
+                        continue
+                    
+                    if not student.department:
+                        errors.append(f'Row {row_num}: Department is required')
+                        continue
+                        
+                    if student.semester < 1 or student.semester > 8:
+                        errors.append(f'Row {row_num}: Semester must be between 1 and 8')
+                        continue
+                    
+                    # Check if student already exists
+                    existing = Student.get_by_id(student.student_id)
+                    if existing:
+                        errors.append(f'Row {row_num}: Student ID {student.student_id} already exists')
+                        continue
+                    
+                    # Save student
+                    student.save()
+                    imported_count += 1
+
+                    # Optional subjects enrollment via CSV column 'subjects'
+                    subjects_field = row_dict.get('subjects', '')
+                    if subjects_field:
+                        # Split by comma, strip, dedupe
+                        raw_codes = [c.strip() for c in subjects_field.split(',') if c is not None]
+                        seen = set()
+                        subject_codes = []
+                        for code in raw_codes:
+                            if code and code not in seen:
+                                seen.add(code)
+                                subject_codes.append(code)
+                        for code in subject_codes:
+                            subj = Subject.get_by_code(code)
+                            if subj:
+                                try:
+                                    student.enroll_subject(code)
+                                except Exception as enroll_err:
+                                    errors.append(f"Row {row_num}: Failed to enroll subject {code}: {str(enroll_err)}")
+                            else:
+                                errors.append(f"Row {row_num}: Subject code {code} not found - skipped")
+                    
+                except Exception as e:
+                    errors.append(f'Row {row_num}: {str(e)}')
+            
+            # Log action
+            db_manager.log_action(session['admin_id'], 'import', 'students', f'{imported_count} students')
+            
+            if imported_count > 0:
+                if errors:
+                    flash(f'Import completed with warnings! {imported_count} students imported, {len(errors)} errors.', 'warning')
+                    for error in errors[:5]:  # Show first 5 errors
+                        flash(error, 'error')
+                    if len(errors) > 5:
+                        flash(f'... and {len(errors) - 5} more errors', 'error')
+                else:
+                    flash(f'Import successful! {imported_count} students imported.', 'success')
+                return redirect(url_for('students.list_students'))
+            else:
+                flash('No students were imported. Please check your CSV file.', 'error')
+                for error in errors[:10]:  # Show first 10 errors
+                    flash(error, 'error')
+                
+        except Exception as e:
+            flash(f'Error processing file: {str(e)}', 'error')
+    
+    return render_template('students/import.html')
+
 # Subject Routes
 @subjects_bp.route('/')
 @login_required
@@ -364,12 +493,24 @@ def list_rooms():
 def add_room():
     if request.method == 'POST':
         try:
+            # Validate input values
+            rows = int(request.form['rows'])
+            cols = int(request.form['cols'])
+            
+            # Validate positive values
+            if rows <= 0 or cols <= 0:
+                flash('Rows and columns must be positive numbers!', 'error')
+                return render_template('rooms/add.html')
+            
+            # Calculate capacity automatically
+            capacity = rows * cols
+            
             room = Room(
                 room_id=request.form['room_id'],
                 name=request.form['name'],
-                rows=int(request.form['rows']),
-                cols=int(request.form['cols']),
-                capacity=int(request.form['capacity']),
+                rows=rows,
+                cols=cols,
+                capacity=capacity,  # Auto-calculated
                 building=request.form.get('building', ''),
                 floor=int(request.form['floor']) if request.form.get('floor') else None,
                 room_type=request.form.get('room_type', 'classroom'),
@@ -390,6 +531,8 @@ def add_room():
             flash('Room added successfully!', 'success')
             return redirect(url_for('rooms.list_rooms'))
             
+        except ValueError as e:
+            flash('Invalid input: Please enter valid numbers for rows and columns!', 'error')
         except Exception as e:
             flash(f'Error adding room: {str(e)}', 'error')
     
@@ -405,10 +548,22 @@ def edit_room(room_id):
     
     if request.method == 'POST':
         try:
+            # Validate input values
+            rows = int(request.form['rows'])
+            cols = int(request.form['cols'])
+            
+            # Validate positive values
+            if rows <= 0 or cols <= 0:
+                flash('Rows and columns must be positive numbers!', 'error')
+                return render_template('rooms/edit.html', room=room)
+            
+            # Calculate capacity automatically
+            capacity = rows * cols
+            
             room.name = request.form['name']
-            room.rows = int(request.form['rows'])
-            room.cols = int(request.form['cols'])
-            room.capacity = int(request.form['capacity'])
+            room.rows = rows
+            room.cols = cols
+            room.capacity = capacity  # Auto-calculated
             room.building = request.form.get('building', '')
             room.floor = int(request.form['floor']) if request.form.get('floor') else None
             room.room_type = request.form.get('room_type', 'classroom')
@@ -422,6 +577,8 @@ def edit_room(room_id):
             flash('Room updated successfully!', 'success')
             return redirect(url_for('rooms.list_rooms'))
             
+        except ValueError as e:
+            flash('Invalid input: Please enter valid numbers for rows and columns!', 'error')
         except Exception as e:
             flash(f'Error updating room: {str(e)}', 'error')
     
@@ -562,6 +719,32 @@ def generate_seating():
             flash(f'Error generating seating arrangement: {str(e)}', 'error')
     
     return render_template('seating/generate.html')
+
+@seating_bp.route('/session-exams')
+@login_required
+def session_exams():
+    exam_date = request.args.get('date')
+    session_time = request.args.get('session')
+    if not exam_date or not session_time:
+        return jsonify({'success': False, 'message': 'date and session are required'}), 400
+
+    query = '''
+        SELECT e.subject_code, s.subject_name,
+               (
+                 SELECT COUNT(*)
+                 FROM student_subjects ss
+                 JOIN students st ON st.student_id = ss.student_id
+                 WHERE ss.subject_code = e.subject_code
+                   AND ss.is_active = 1 AND st.is_active = 1
+               ) AS student_count
+        FROM exams e
+        JOIN subjects s ON e.subject_code = s.subject_code
+        WHERE e.exam_date = ? AND e.start_time = ? AND e.is_active = 1
+        ORDER BY s.subject_name
+    '''
+    rows = db_manager.execute_query(query, (exam_date, session_time))
+    exams = [dict(r) for r in rows] if rows else []
+    return jsonify({'success': True, 'exams': exams})
 
 @seating_bp.route('/view')
 @login_required

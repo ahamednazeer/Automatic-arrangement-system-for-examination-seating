@@ -300,6 +300,22 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
+                                <label for="sessionTime">Session Time</label>
+                                <select class="form-control" id="sessionTime" name="sessionTime">
+                                    <option value="09:00">09:00 AM</option>
+                                    <option value="10:00" selected>10:00 AM</option>
+                                    <option value="11:00">11:00 AM</option>
+                                    <option value="14:00">02:00 PM</option>
+                                    <option value="15:00">03:00 PM</option>
+                                    <option value="16:00">04:00 PM</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
                                 <label for="department">Department (Optional)</label>
                                 <select class="form-control" id="department" name="department">
                                     <option value="">All Departments</option>
@@ -358,20 +374,87 @@ function generateReport(reportType) {
 }
 
 function processReport() {
-    const formData = new FormData(document.getElementById('reportForm'));
+    const form = document.getElementById('reportForm');
+    const formData = new FormData(form);
     
     // Show loading state
     const btn = event.target;
+    const originalText = btn.innerHTML;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
     btn.disabled = true;
     
-    // Simulate report generation (replace with actual implementation)
-    setTimeout(() => {
-        alert('Report generated successfully!');
-        $('#reportModal').modal('hide');
-        btn.innerHTML = '<i class="fas fa-cogs"></i> Generate Report';
+    // Submit form to generate report
+    fetch('/reports/generate', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.ok) {
+            // If successful, download the file
+            return response.blob().then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                
+                // Get filename from response headers or use default
+                const contentDisposition = response.headers.get('Content-Disposition');
+                let filename = 'report.pdf';
+                if (contentDisposition) {
+                    const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+                    if (filenameMatch) {
+                        filename = filenameMatch[1];
+                    }
+                }
+                a.download = filename;
+                
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                // Show success message
+                showAlert('Report generated and downloaded successfully!', 'success');
+                $('#reportModal').modal('hide');
+            });
+        } else {
+            return response.text().then(text => {
+                throw new Error(text || 'Failed to generate report');
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error generating report:', error);
+        showAlert('Error generating report: ' + error.message, 'error');
+    })
+    .finally(() => {
+        // Reset button state
+        btn.innerHTML = originalText;
         btn.disabled = false;
-    }, 3000);
+    });
+}
+
+function showAlert(message, type) {
+    // Create alert element
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type === 'error' ? 'danger' : 'success'} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="close" data-dismiss="alert">
+            <span>&times;</span>
+        </button>
+    `;
+    
+    // Insert at top of page
+    const container = document.querySelector('.container-fluid');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
 }
 
 function scheduleReport() {

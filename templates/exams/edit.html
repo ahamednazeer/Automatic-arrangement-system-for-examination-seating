@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Exam - Exam Seating System{% endblock %}
+{% block page_title %}Edit Exam{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-content">
+        <h2>Edit Exam</h2>
+        <p>Update examination details</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="{{ url_for('exams') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Exams
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3>Exam Details</h3>
+                <div class="card-subtitle">
+                    Exam ID: <span class="badge badge-primary">{{ exam.id }}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="editExamForm">
+                    <div class="form-group">
+                        <label for="subject_code">Subject *</label>
+                        <select id="subject_code" name="subject_code" class="form-control" required>
+                            <option value="">Select Subject</option>
+                            {% for subject in subjects %}
+                            <option value="{{ subject.subject_code }}" 
+                                    data-name="{{ subject.subject_name }}"
+                                    data-department="{{ subject.department }}"
+                                    {% if subject.subject_code == exam.subject_code %}selected{% endif %}>
+                                {{ subject.subject_code }} - {{ subject.subject_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="exam_date">Exam Date *</label>
+                                <input type="date" 
+                                       id="exam_date" 
+                                       name="exam_date" 
+                                       class="form-control" 
+                                       value="{{ exam.exam_date }}"
+                                       required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="duration">Duration (minutes) *</label>
+                                <select id="duration" name="duration" class="form-control" required>
+                                    <option value="">Select Duration</option>
+                                    <option value="60" {% if exam.duration == 60 %}selected{% endif %}>1 Hour (60 min)</option>
+                                    <option value="90" {% if exam.duration == 90 %}selected{% endif %}>1.5 Hours (90 min)</option>
+                                    <option value="120" {% if exam.duration == 120 %}selected{% endif %}>2 Hours (120 min)</option>
+                                    <option value="150" {% if exam.duration == 150 %}selected{% endif %}>2.5 Hours (150 min)</option>
+                                    <option value="180" {% if exam.duration == 180 %}selected{% endif %}>3 Hours (180 min)</option>
+                                    <option value="240" {% if exam.duration == 240 %}selected{% endif %}>4 Hours (240 min)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="start_time">Start Time *</label>
+                                <select id="start_time" name="start_time" class="form-control" required>
+                                    <option value="">Select Start Time</option>
+                                    <option value="09:00" {% if exam.start_time == '09:00' %}selected{% endif %}>09:00 AM</option>
+                                    <option value="10:00" {% if exam.start_time == '10:00' %}selected{% endif %}>10:00 AM</option>
+                                    <option value="11:00" {% if exam.start_time == '11:00' %}selected{% endif %}>11:00 AM</option>
+                                    <option value="12:00" {% if exam.start_time == '12:00' %}selected{% endif %}>12:00 PM</option>
+                                    <option value="13:00" {% if exam.start_time == '13:00' %}selected{% endif %}>01:00 PM</option>
+                                    <option value="14:00" {% if exam.start_time == '14:00' %}selected{% endif %}>02:00 PM</option>
+                                    <option value="15:00" {% if exam.start_time == '15:00' %}selected{% endif %}>03:00 PM</option>
+                                    <option value="16:00" {% if exam.start_time == '16:00' %}selected{% endif %}>04:00 PM</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="end_time">End Time</label>
+                                <input type="time" 
+                                       id="end_time" 
+                                       name="end_time" 
+                                       class="form-control" 
+                                       value="{{ exam.end_time }}"
+                                       readonly>
+                                <small class="form-text">Automatically calculated based on start time and duration</small>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Update Exam
+                        </button>
+                        <a href="{{ url_for('exams') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3>Current Exam Info</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-list">
+                    <div class="info-item">
+                        <i class="fas fa-book text-primary"></i>
+                        <div>
+                            <strong>Subject</strong>
+                            <p>{{ exam.subject_name }}</p>
+                            <small class="text-muted">{{ exam.subject_code }}</small>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-calendar text-success"></i>
+                        <div>
+                            <strong>Current Date</strong>
+                            <p>{{ exam.exam_date }}</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-clock text-info"></i>
+                        <div>
+                            <strong>Current Time</strong>
+                            <p>{{ exam.start_time }} - {{ exam.end_time }}</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-hourglass text-warning"></i>
+                        <div>
+                            <strong>Duration</strong>
+                            <p>{{ exam.duration }} minutes</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Actions</h3>
+            </div>
+            <div class="card-body">
+                <a href="{{ url_for('view_seating', date=exam.exam_date, session=exam.start_time) }}" 
+                   class="btn btn-success btn-block">
+                    <i class="fas fa-chair"></i> View Seating Arrangement
+                </a>
+                <button class="btn btn-danger btn-block" onclick="deleteExam('{{ exam.id }}')">
+                    <i class="fas fa-trash"></i> Delete Exam
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Warning</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p><strong>Note:</strong> Changing exam details may affect existing seating arrangements. Please review and regenerate seating if necessary.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal" id="deleteModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Confirm Delete</h3>
+            <button class="modal-close" onclick="closeModal('deleteModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete this exam? This will also remove any associated seating arrangements.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('deleteModal')">Cancel</button>
+            <form id="deleteForm" method="POST" style="display: inline;">
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Calculate end time based on start time and duration
+function calculateEndTime() {
+    const startTime = document.getElementById('start_time').value;
+    const duration = parseInt(document.getElementById('duration').value);
+    
+    if (startTime && duration) {
+        const [hours, minutes] = startTime.split(':').map(Number);
+        const startDate = new Date();
+        startDate.setHours(hours, minutes, 0, 0);
+        
+        const endDate = new Date(startDate.getTime() + duration * 60000);
+        const endTime = endDate.toTimeString().substring(0, 5);
+        
+        document.getElementById('end_time').value = endTime;
+    }
+}
+
+// Event listeners
+document.getElementById('start_time').addEventListener('change', calculateEndTime);
+document.getElementById('duration').addEventListener('change', calculateEndTime);
+
+// Form validation
+document.getElementById('editExamForm').addEventListener('submit', function(e) {
+    const subjectCode = document.getElementById('subject_code').value;
+    const examDate = document.getElementById('exam_date').value;
+    const startTime = document.getElementById('start_time').value;
+    const duration = document.getElementById('duration').value;
+    
+    if (!subjectCode || !examDate || !startTime || !duration) {
+        e.preventDefault();
+        alert('Please fill in all required fields.');
+        return false;
+    }
+});
+
+// Delete exam function
+function deleteExam(examId) {
+    document.getElementById('deleteForm').action = `/exams/delete/${examId}`;
+    document.getElementById('deleteModal').style.display = 'flex';
+}
+
+// Modal functions
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('deleteModal');
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Initialize end time calculation on page load
+document.addEventListener('DOMContentLoaded', function() {
+    calculateEndTime();
+});
+</script>
+{% endblock %}

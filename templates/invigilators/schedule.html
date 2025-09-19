@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Invigilator Schedule - {{ invigilator.name }}{% endblock %}
+{% block page_title %}Invigilator Schedule{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-content">
+        <h2>{{ invigilator.name }}'s Schedule</h2>
+        <p>Staff ID: {{ invigilator.staff_id }} | Department: {{ invigilator.department or 'N/A' }}</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="{{ url_for('invigilators') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Invigilators
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Exam Assignments</h3>
+        <div class="card-subtitle">
+            Total Assignments: <span class="badge badge-primary">{{ assignments|length }}</span>
+        </div>
+    </div>
+    
+    <div class="card-body">
+        {% if assignments %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Subject</th>
+                        <th>Room</th>
+                        <th>Duration</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assignment in assignments %}
+                    <tr>
+                        <td>
+                            <span class="exam-date">{{ assignment.exam_date }}</span>
+                        </td>
+                        <td>
+                            <div class="time-info">
+                                <span class="start-time">{{ assignment.start_time }}</span>
+                                <small class="text-muted d-block">to {{ assignment.end_time }}</small>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="subject-info">
+                                <strong>{{ assignment.subject_name }}</strong>
+                                <small class="text-muted d-block">{{ assignment.subject_code }}</small>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-info">{{ assignment.room_name }}</span>
+                            <small class="text-muted d-block">{{ assignment.room_id }}</small>
+                        </td>
+                        <td>
+                            <span class="badge badge-secondary">{{ assignment.duration }} min</span>
+                        </td>
+                        <td>
+                            <span class="badge exam-status" data-exam-date="{{ assignment.exam_date }}" data-start-time="{{ assignment.start_time }}">
+                                <!-- Status will be set by JavaScript -->
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-calendar-times"></i>
+            </div>
+            <h3>No Assignments</h3>
+            <p>This invigilator has no exam assignments scheduled.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if assignments %}
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3>Schedule Summary</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-list">
+                    <div class="info-item">
+                        <i class="fas fa-calendar-check text-success"></i>
+                        <div>
+                            <strong>Total Assignments</strong>
+                            <p>{{ assignments|length }} exam sessions</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-clock text-info"></i>
+                        <div>
+                            <strong>Total Hours</strong>
+                            <p>{{ (assignments|sum(attribute='duration') / 60)|round(1) }} hours</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3>Contact Information</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-list">
+                    <div class="info-item">
+                        <i class="fas fa-envelope text-primary"></i>
+                        <div>
+                            <strong>Email</strong>
+                            <p>{{ invigilator.email or 'Not provided' }}</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-phone text-success"></i>
+                        <div>
+                            <strong>Phone</strong>
+                            <p>{{ invigilator.phone or 'Not provided' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Set exam status based on current date and time
+function updateExamStatus() {
+    const now = new Date();
+    const currentDate = now.toISOString().split('T')[0];
+    const currentTime = now.toTimeString().split(' ')[0].substring(0, 5);
+    
+    document.querySelectorAll('.exam-status').forEach(badge => {
+        const examDate = badge.getAttribute('data-exam-date');
+        const startTime = badge.getAttribute('data-start-time');
+        
+        if (examDate < currentDate || (examDate === currentDate && startTime < currentTime)) {
+            badge.textContent = 'Completed';
+            badge.className = 'badge badge-secondary exam-status';
+        } else if (examDate === currentDate) {
+            badge.textContent = 'Today';
+            badge.className = 'badge badge-warning exam-status';
+        } else {
+            badge.textContent = 'Upcoming';
+            badge.className = 'badge badge-success exam-status';
+        }
+    });
+}
+
+// Initialize status on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateExamStatus();
+});
+</script>
+{% endblock %}

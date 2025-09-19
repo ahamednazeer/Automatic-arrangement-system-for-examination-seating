@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Bulk Assign (UI) - Exam Seating System{% endblock %}
+{% block page_title %}Bulk Assign Subjects to Students{% endblock %}
+
+{% block content %}
+<div class="bulk-assign-content">
+  <div class="content-header mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <h2 class="mb-2">Bulk Assign (UI)</h2>
+        <p class="text-secondary mb-0">Select multiple students and multiple subjects, then assign in one click</p>
+      </div>
+      <div class="header-actions">
+        <a href="{{ url_for('students') }}" class="btn btn-secondary">
+          <i class="fas fa-arrow-left"></i> Back to Students
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters Card -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <form method="GET" class="filter-form">
+        <div class="row">
+          <!-- Student Filters -->
+          <div class="col-md-6">
+            <h5 class="mb-2">Filter Students</h5>
+            <div class="form-row">
+              <div class="col-md-6 mb-2">
+                <input type="text" name="s_search" class="form-control" placeholder="Search by name or ID" value="{{ current_s_search or '' }}">
+              </div>
+              <div class="col-md-3 mb-2">
+                <select name="s_department" class="form-control">
+                  <option value="">All Departments</option>
+                  {% for dept in student_departments %}
+                  <option value="{{ dept.department }}" {% if current_s_department == dept.department %}selected{% endif %}>{{ dept.department }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-3 mb-2">
+                <select name="s_semester" class="form-control">
+                  <option value="">All Semesters</option>
+                  {% for sem in student_semesters %}
+                  <option value="{{ sem.semester }}" {% if current_s_semester == sem.semester|string %}selected{% endif %}>Sem {{ sem.semester }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+          <!-- Subject Filters -->
+          <div class="col-md-6">
+            <h5 class="mb-2">Filter Subjects</h5>
+            <div class="form-row">
+              <div class="col-md-6 mb-2">
+                <input type="text" name="sub_search" class="form-control" placeholder="Search by code or name" value="{{ current_sub_search or '' }}">
+              </div>
+              <div class="col-md-3 mb-2">
+                <select name="sub_department" class="form-control">
+                  <option value="">All Departments</option>
+                  {% for dept in subject_departments %}
+                  <option value="{{ dept.department }}" {% if current_sub_department == dept.department %}selected{% endif %}>{{ dept.department }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-3 mb-2">
+                <select name="sub_semester" class="form-control">
+                  <option value="">All Semesters</option>
+                  {% for sem in subject_semesters %}
+                  <option value="{{ sem.semester }}" {% if current_sub_semester == sem.semester|string %}selected{% endif %}>Sem {{ sem.semester }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-2 d-flex gap-2">
+          <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Apply Filters</button>
+          <a href="{{ url_for('bulk_assign_ui') }}" class="btn btn-secondary"><i class="fas fa-times"></i> Clear</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <form method="POST">
+        <div class="row">
+          <!-- Students -->
+          <div class="col-md-6">
+            <h4>Students</h4>
+            <small class="text-muted">Use the quick filter to narrow down, then select multiple</small>
+            <div class="mb-2">
+              <input type="text" id="student_quick_filter" class="form-control form-control-sm" placeholder="Type to filter students...">
+            </div>
+            <div class="list-box">
+              <select name="student_ids" id="student_ids" class="form-control" size="15" multiple required>
+                {% for s in students %}
+                <option value="{{ s.student_id }}">
+                  {{ s.student_id }} - {{ s.name }} ({{ s.department }}, Sem {{ s.semester }})
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mt-2">
+              <button type="button" class="btn btn-sm btn-secondary" onclick="selectAll('student_ids')">Select All</button>
+              <button type="button" class="btn btn-sm btn-secondary" onclick="clearAll('student_ids')">Clear</button>
+            </div>
+          </div>
+
+          <!-- Subjects -->
+          <div class="col-md-6">
+            <h4>Subjects</h4>
+            <small class="text-muted">Select one or more subjects to assign</small>
+            <div class="mb-2">
+              <input type="text" id="subject_quick_filter" class="form-control form-control-sm" placeholder="Type to filter subjects...">
+            </div>
+            <div class="list-box">
+              <select name="subject_codes" id="subject_codes" class="form-control" size="15" multiple required>
+                {% for sub in subjects %}
+                <option value="{{ sub.subject_code }}">
+                  {{ sub.subject_code }} - {{ sub.subject_name }} ({{ sub.department }}, Sem {{ sub.semester }})
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mt-2">
+              <button type="button" class="btn btn-sm btn-secondary" onclick="selectAll('subject_codes')">Select All</button>
+              <button type="button" class="btn btn-sm btn-secondary" onclick="clearAll('subject_codes')">Clear</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 d-flex gap-2">
+          <a href="{{ url_for('students') }}" class="btn btn-secondary">
+            <i class="fas fa-times"></i> Cancel
+          </a>
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-check"></i> Assign Selected
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.list-box select { width: 100%; }
+.list-box { border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: .5rem; background: var(--bg-primary); }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function selectAll(id){
+  const sel = document.getElementById(id);
+  for (const opt of sel.options) opt.selected = true;
+}
+function clearAll(id){
+  const sel = document.getElementById(id);
+  for (const opt of sel.options) opt.selected = false;
+}
+
+// Quick filter utility for select options
+function attachQuickFilter(inputId, selectId) {
+  const input = document.getElementById(inputId);
+  const select = document.getElementById(selectId);
+  if (!input || !select) return;
+
+  // Cache original text for each option to avoid cumulative filtering
+  for (const opt of select.options) {
+    opt.dataset.searchText = (opt.textContent || opt.innerText || '').toLowerCase();
+  }
+
+  input.addEventListener('input', function() {
+    const q = this.value.trim().toLowerCase();
+    for (const opt of select.options) {
+      const match = !q || (opt.dataset.searchText && opt.dataset.searchText.includes(q));
+      opt.hidden = !match;
+      // If hidden, also ensure it's not selected accidentally
+      if (!match) opt.selected = false;
+    }
+  });
+}
+
+// Initialize quick filters on DOM ready
+document.addEventListener('DOMContentLoaded', function() {
+  attachQuickFilter('student_quick_filter', 'student_ids');
+  attachQuickFilter('subject_quick_filter', 'subject_codes');
+});
+</script>
+{% endblock %}

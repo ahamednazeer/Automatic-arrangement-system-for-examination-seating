@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Add Subject - Exam Seating System{% endblock %}
+{% block page_title %}Add Subject{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-content">
+        <h2>Add New Subject</h2>
+        <p>Add a new subject to the system</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="{{ url_for('subjects') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Subjects
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3>Subject Information</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="addSubjectForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="subject_code">Subject Code *</label>
+                                <input type="text" 
+                                       id="subject_code" 
+                                       name="subject_code" 
+                                       class="form-control" 
+                                       placeholder="e.g., CS101, MATH201"
+                                       required>
+                                <small class="form-text">Unique identifier for the subject</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="semester">Semester *</label>
+                                <select id="semester" name="semester" class="form-control" required>
+                                    <option value="">Select Semester</option>
+                                    <option value="1">1st Semester</option>
+                                    <option value="2">2nd Semester</option>
+                                    <option value="3">3rd Semester</option>
+                                    <option value="4">4th Semester</option>
+                                    <option value="5">5th Semester</option>
+                                    <option value="6">6th Semester</option>
+                                    <option value="7">7th Semester</option>
+                                    <option value="8">8th Semester</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="subject_name">Subject Name *</label>
+                        <input type="text" 
+                               id="subject_name" 
+                               name="subject_name" 
+                               class="form-control" 
+                               placeholder="e.g., Introduction to Computer Science"
+                               required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="department">Department *</label>
+                        <select id="department" name="department" class="form-control" required>
+                            <option value="">Select Department</option>
+                            <option value="Computer Science">Computer Science</option>
+                            <option value="Information Technology">Information Technology</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Mechanical">Mechanical</option>
+                            <option value="Civil">Civil</option>
+                            <option value="Electrical">Electrical</option>
+                            <option value="Mathematics">Mathematics</option>
+                            <option value="Physics">Physics</option>
+                            <option value="Chemistry">Chemistry</option>
+                            <option value="English">English</option>
+                            <option value="Management">Management</option>
+                        </select>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Add Subject
+                        </button>
+                        <a href="{{ url_for('subjects') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3>Guidelines</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-list">
+                    <div class="info-item">
+                        <i class="fas fa-info-circle text-primary"></i>
+                        <div>
+                            <strong>Subject Code</strong>
+                            <p>Use a unique code that follows your institution's naming convention.</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-building text-success"></i>
+                        <div>
+                            <strong>Department</strong>
+                            <p>Select the department that offers this subject.</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-calendar text-warning"></i>
+                        <div>
+                            <strong>Semester</strong>
+                            <p>Choose the semester in which this subject is taught.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Form validation
+document.getElementById('addSubjectForm').addEventListener('submit', function(e) {
+    const subjectCode = document.getElementById('subject_code').value.trim();
+    const subjectName = document.getElementById('subject_name').value.trim();
+    const department = document.getElementById('department').value;
+    const semester = document.getElementById('semester').value;
+    
+    if (!subjectCode || !subjectName || !department || !semester) {
+        e.preventDefault();
+        alert('Please fill in all required fields.');
+        return false;
+    }
+    
+    // Validate subject code format
+    if (!/^[A-Z0-9]+$/i.test(subjectCode)) {
+        e.preventDefault();
+        alert('Subject code should contain only letters and numbers.');
+        return false;
+    }
+});
+
+// Auto-uppercase subject code
+document.getElementById('subject_code').addEventListener('input', function() {
+    this.value = this.value.toUpperCase();
+});
+</script>
+{% endblock %}

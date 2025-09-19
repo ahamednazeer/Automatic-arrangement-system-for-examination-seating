@@ -121,12 +121,12 @@
 </div>
 
 <!-- Auto Assignment Modal -->
-<div class="modal fade" id="assignModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
+<div class="modal fade" id="assignModal" tabindex="-1" role="dialog" style="display: none; position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-lg" role="document" style="position: relative; margin: 1.75rem auto; max-width: 800px;">
+        <div class="modal-content" style="background-color: white; border-radius: 0.5rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
             <div class="modal-header">
                 <h5 class="modal-title">Auto Assign Invigilators</h5>
-                <button type="button" class="close" data-dismiss="modal">
+                <button type="button" class="close" onclick="hideModal('assignModal')">
                     <span>&times;</span>
                 </button>
             </div>
@@ -168,7 +168,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-secondary" onclick="hideModal('assignModal')">Cancel</button>
                 <button type="button" class="btn btn-primary" onclick="performAutoAssign()">
                     <i class="fas fa-cogs"></i> Auto Assign
                 </button>
@@ -178,12 +178,12 @@
 </div>
 
 <!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" style="display: none; position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog" role="document" style="position: relative; margin: 1.75rem auto; max-width: 500px;">
+        <div class="modal-content" style="background-color: white; border-radius: 0.5rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
             <div class="modal-header">
                 <h5 class="modal-title">Confirm Delete</h5>
-                <button type="button" class="close" data-dismiss="modal">
+                <button type="button" class="close" onclick="hideModal('deleteModal')">
                     <span>&times;</span>
                 </button>
             </div>
@@ -191,7 +191,7 @@
                 Are you sure you want to delete this invigilator? This will also remove all their assignments.
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-secondary" onclick="hideModal('deleteModal')">Cancel</button>
                 <form id="deleteForm" method="POST" style="display: inline;">
                     <button type="submit" class="btn btn-danger">Delete</button>
                 </form>
@@ -202,7 +202,10 @@
 
 <script>
 function assignInvigilators() {
-    $('#assignModal').modal('show');
+    const modal = document.getElementById('assignModal');
+    modal.style.display = 'block';
+    modal.classList.add('show');
+    document.body.classList.add('modal-open');
 }
 
 function performAutoAssign() {
@@ -210,20 +213,81 @@ function performAutoAssign() {
     
     // Show loading state
     const btn = event.target;
+    const originalText = btn.innerHTML;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Assigning...';
     btn.disabled = true;
     
-    // Simulate API call (replace with actual implementation)
-    setTimeout(() => {
-        alert('Invigilators assigned successfully!');
-        $('#assignModal').modal('hide');
-        location.reload();
-    }, 2000);
+    // Make actual API call with proper headers for AJAX
+    fetch('/invigilators/assign', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(async response => {
+        try {
+            // Try to parse as JSON first
+            const data = await response.json();
+            if (response.ok && data.success) {
+                hideModal('assignModal');
+                alert(data.message || 'Invigilators assigned successfully!');
+                location.reload();
+            } else {
+                throw new Error(data.message || `Assignment failed: ${response.status}`);
+            }
+        } catch (jsonError) {
+            // If JSON parsing fails, handle based on response status
+            if (response.ok) {
+                // If response is OK but not JSON, assume success (redirect case)
+                hideModal('assignModal');
+                location.reload();
+            } else {
+                // For error responses, show generic error
+                throw new Error(`Assignment failed: ${response.status} - ${response.statusText}`);
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error assigning invigilators: ' + error.message + '. Please try again.');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
 }
 
 function deleteInvigilator(staffId) {
     document.getElementById('deleteForm').action = '/invigilators/delete/' + staffId;
-    $('#deleteModal').modal('show');
+    const modal = document.getElementById('deleteModal');
+    modal.style.display = 'block';
+    modal.classList.add('show');
+    document.body.classList.add('modal-open');
 }
+
+function hideModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.style.display = 'none';
+    modal.classList.remove('show');
+    document.body.classList.remove('modal-open');
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(event) {
+    if (event.target.classList.contains('modal')) {
+        hideModal(event.target.id);
+    }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            if (modal.style.display === 'block') {
+                hideModal(modal.id);
+            }
+        });
+    }
+});
 </script>
 {% endblock %}

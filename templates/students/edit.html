@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Student - Exam Seating System{% endblock %}
+{% block page_title %}Edit Student{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-content">
+        <h2>Edit Student</h2>
+        <p>Update student information</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="{{ url_for('students') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Students
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3>Student Information</h3>
+                <div class="card-subtitle">
+                    Student ID: <span class="badge badge-primary">{{ student.student_id }}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="editStudentForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="student_id">Student ID</label>
+                                <input type="text" 
+                                       id="student_id" 
+                                       name="student_id" 
+                                       class="form-control" 
+                                       value="{{ student.student_id }}"
+                                       readonly>
+                                <small class="form-text">Student ID cannot be changed</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="roll_number">Roll Number</label>
+                                <input type="text" 
+                                       id="roll_number" 
+                                       name="roll_number" 
+                                       class="form-control" 
+                                       value="{{ student.roll_number or '' }}"
+                                       placeholder="Enter roll number">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="name">Full Name *</label>
+                        <input type="text" 
+                               id="name" 
+                               name="name" 
+                               class="form-control" 
+                               value="{{ student.name }}"
+                               placeholder="Enter full name"
+                               required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="email">Email Address</label>
+                                <input type="email" 
+                                       id="email" 
+                                       name="email" 
+                                       class="form-control" 
+                                       value="{{ student.email or '' }}"
+                                       placeholder="student@example.com">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="phone">Phone Number</label>
+                                <input type="tel" 
+                                       id="phone" 
+                                       name="phone" 
+                                       class="form-control" 
+                                       value="{{ student.phone or '' }}"
+                                       placeholder="+1234567890">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="department">Department *</label>
+                                <select id="department" name="department" class="form-control" required>
+                                    <option value="">Select Department</option>
+                                    <option value="Computer Science" {% if student.department == 'Computer Science' %}selected{% endif %}>Computer Science</option>
+                                    <option value="Information Technology" {% if student.department == 'Information Technology' %}selected{% endif %}>Information Technology</option>
+                                    <option value="Electronics" {% if student.department == 'Electronics' %}selected{% endif %}>Electronics</option>
+                                    <option value="Mechanical" {% if student.department == 'Mechanical' %}selected{% endif %}>Mechanical</option>
+                                    <option value="Civil" {% if student.department == 'Civil' %}selected{% endif %}>Civil</option>
+                                    <option value="Electrical" {% if student.department == 'Electrical' %}selected{% endif %}>Electrical</option>
+                                    <option value="Mathematics" {% if student.department == 'Mathematics' %}selected{% endif %}>Mathematics</option>
+                                    <option value="Physics" {% if student.department == 'Physics' %}selected{% endif %}>Physics</option>
+                                    <option value="Chemistry" {% if student.department == 'Chemistry' %}selected{% endif %}>Chemistry</option>
+                                    <option value="English" {% if student.department == 'English' %}selected{% endif %}>English</option>
+                                    <option value="Management" {% if student.department == 'Management' %}selected{% endif %}>Management</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="semester">Semester *</label>
+                                <select id="semester" name="semester" class="form-control" required>
+                                    <option value="">Select Semester</option>
+                                    <option value="1" {% if student.semester == 1 %}selected{% endif %}>1st Semester</option>
+                                    <option value="2" {% if student.semester == 2 %}selected{% endif %}>2nd Semester</option>
+                                    <option value="3" {% if student.semester == 3 %}selected{% endif %}>3rd Semester</option>
+                                    <option value="4" {% if student.semester == 4 %}selected{% endif %}>4th Semester</option>
+                                    <option value="5" {% if student.semester == 5 %}selected{% endif %}>5th Semester</option>
+                                    <option value="6" {% if student.semester == 6 %}selected{% endif %}>6th Semester</option>
+                                    <option value="7" {% if student.semester == 7 %}selected{% endif %}>7th Semester</option>
+                                    <option value="8" {% if student.semester == 8 %}selected{% endif %}>8th Semester</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="year_of_study">Year of Study</label>
+                                <select id="year_of_study" name="year_of_study" class="form-control">
+                                    <option value="">Select Year</option>
+                                    <option value="1" {% if student.year_of_study == 1 %}selected{% endif %}>1st Year</option>
+                                    <option value="2" {% if student.year_of_study == 2 %}selected{% endif %}>2nd Year</option>
+                                    <option value="3" {% if student.year_of_study == 3 %}selected{% endif %}>3rd Year</option>
+                                    <option value="4" {% if student.year_of_study == 4 %}selected{% endif %}>4th Year</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="status">Status</label>
+                                <select id="status" name="status" class="form-control">
+                                    <option value="active" {% if student.status == 'active' %}selected{% endif %}>Active</option>
+                                    <option value="inactive" {% if student.status == 'inactive' %}selected{% endif %}>Inactive</option>
+                                    <option value="graduated" {% if student.status == 'graduated' %}selected{% endif %}>Graduated</option>
+                                    <option value="suspended" {% if student.status == 'suspended' %}selected{% endif %}>Suspended</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address">Address</label>
+                        <textarea id="address" 
+                                  name="address" 
+                                  class="form-control" 
+                                  rows="3"
+                                  placeholder="Enter complete address">{{ student.address or '' }}</textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Update Student
+                        </button>
+                        <a href="{{ url_for('students') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3>Current Information</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-list">
+                    <div class="info-item">
+                        <i class="fas fa-id-card text-primary"></i>
+                        <div>
+                            <strong>Student ID</strong>
+                            <p>{{ student.student_id }}</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-user text-success"></i>
+                        <div>
+                            <strong>Name</strong>
+                            <p>{{ student.name }}</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-building text-info"></i>
+                        <div>
+                            <strong>Department</strong>
+                            <p>{{ student.department }}</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-calendar text-warning"></i>
+                        <div>
+                            <strong>Semester</strong>
+                            <p>{{ student.semester }}</p>
+                        </div>
+                    </div>
+                    {% if student.email %}
+                    <div class="info-item">
+                        <i class="fas fa-envelope text-secondary"></i>
+                        <div>
+                            <strong>Email</strong>
+                            <p>{{ student.email }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Actions</h3>
+            </div>
+            <div class="card-body">
+                <button class="btn btn-danger btn-block" onclick="deleteStudent('{{ student.student_id }}')">
+                    <i class="fas fa-trash"></i> Delete Student
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Exam History</h3>
+            </div>
+            <div class="card-body">
+                <div class="exam-history">
+                    <!-- This would be populated with actual exam history -->
+                    <div class="empty-state-small">
+                        <i class="fas fa-history"></i>
+                        <p>No exam history available</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal" id="deleteModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Confirm Delete</h3>
+            <button class="modal-close" onclick="closeModal('deleteModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete this student? This action cannot be undone and will affect all related records.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('deleteModal')">Cancel</button>
+            <form id="deleteForm" method="POST" style="display: inline;">
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Form validation
+document.getElementById('editStudentForm').addEventListener('submit', function(e) {
+    const name = document.getElementById('name').value.trim();
+    const department = document.getElementById('department').value;
+    const semester = document.getElementById('semester').value;
+    
+    if (!name || !department || !semester) {
+        e.preventDefault();
+        alert('Please fill in all required fields.');
+        return false;
+    }
+    
+    // Validate email format if provided
+    const email = document.getElementById('email').value.trim();
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        e.preventDefault();
+        alert('Please enter a valid email address.');
+        return false;
+    }
+});
+
+// Delete student function
+function deleteStudent(studentId) {
+    document.getElementById('deleteForm').action = `/students/delete/${studentId}`;
+    document.getElementById('deleteModal').style.display = 'flex';
+}
+
+// Modal functions
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('deleteModal');
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Auto-format phone number
+document.getElementById('phone').addEventListener('input', function() {
+    let value = this.value.replace(/\D/g, '');
+    if (value.length > 0) {
+        if (value.length <= 3) {
+            value = value;
+        } else if (value.length <= 6) {
+            value = value.slice(0, 3) + '-' + value.slice(3);
+        } else {
+            value = value.slice(0, 3) + '-' + value.slice(3, 6) + '-' + value.slice(6, 10);
+        }
+    }
+    this.value = value;
+});
+</script>
+{% endblock %}

@@ -81,6 +81,12 @@
                                         <td>Phone number</td>
                                         <td>+1234567890</td>
                                     </tr>
+                                    <tr>
+                                        <td><code>subjects</code></td>
+                                        <td><span class="badge badge-secondary">Optional</span></td>
+                                        <td>Comma-separated subject codes to enroll (must exist)</td>
+                                        <td>"CS101,CS102"</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -109,10 +115,10 @@
 
                             <div class="sample-preview">
                                 <h5>Sample Content:</h5>
-                                <pre class="sample-code">student_id,name,department,semester,email,phone
-CS2024001,John Doe,Computer Science,3,john@example.com,+1234567890
-IT2024002,Jane Smith,Information Technology,2,jane@example.com,+0987654321
-ME2024003,Bob Johnson,Mechanical,4,,+1122334455</pre>
+                                <pre class="sample-code">student_id,name,department,semester,email,phone,subjects
+CS2024001,John Doe,Computer Science,3,john@example.com,+1234567890,"CS101,CS102"
+IT2024002,Jane Smith,Information Technology,2,jane@example.com,+0987654321,
+ME2024003,Bob Johnson,Mechanical,4,,+1122334455,ME201</pre>
                             </div>
                         </div>
                     </div>
@@ -612,12 +618,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function downloadSample() {
     const sampleData = [
-        ['student_id', 'name', 'department', 'semester', 'email', 'phone'],
-        ['CS2024001', 'John Doe', 'Computer Science', '3', 'john@example.com', '+1234567890'],
-        ['IT2024002', 'Jane Smith', 'Information Technology', '2', 'jane@example.com', '+0987654321'],
-        ['ME2024003', 'Bob Johnson', 'Mechanical', '4', '', '+1122334455'],
-        ['EE2024004', 'Alice Brown', 'Electrical', '1', 'alice@example.com', ''],
-        ['CE2024005', 'Charlie Wilson', 'Civil', '5', 'charlie@example.com', '+5566778899']
+        ['student_id', 'name', 'department', 'semester', 'email', 'phone', 'subjects'],
+        ['CS2024001', 'John Doe', 'Computer Science', '3', 'john@example.com', '+1234567890', 'CS101,CS102'],
+        ['IT2024002', 'Jane Smith', 'Information Technology', '2', 'jane@example.com', '+0987654321', ''],
+        ['ME2024003', 'Bob Johnson', 'Mechanical', '4', '', '+1122334455', 'ME201'],
+        ['EE2024004', 'Alice Brown', 'Electrical', '1', 'alice@example.com', '', ''],
+        ['CE2024005', 'Charlie Wilson', 'Civil', '5', 'charlie@example.com', '+5566778899', '']
     ];
 
     const csvContent = sampleData.map(row => 

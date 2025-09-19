@@ -1,9 +1,9 @@
 # Examination Seating System Configuration
-# Generated on 2025-07-28 22:38:56
+# Generated on 2025-09-19 19:29:33
 
 # Application Settings
 DEBUG = True
-SECRET_KEY = 'change-this-in-production-20250728'
+SECRET_KEY = 'change-this-in-production-20250919'
 
 # Database Settings
 DATABASE_URL = 'sqlite:///exam_system.db'

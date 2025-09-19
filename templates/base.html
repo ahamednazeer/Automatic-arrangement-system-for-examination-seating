@@ -33,49 +33,49 @@
         <nav class="sidebar-nav">
             <ul>
                 <li>
-                    <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                    <a href="/dashboard" class="nav-link {% if request.path == '/dashboard' %}active{% endif %}">
                         <i class="fas fa-tachometer-alt"></i>
                         <span>Dashboard</span>
                     </a>
                 </li>
                 <li>
-                    <a href="{{ url_for('students') }}" class="nav-link {% if request.endpoint in ['students', 'add_student', 'edit_student'] %}active{% endif %}">
+                    <a href="/students" class="nav-link {% if request.path.startswith('/students') %}active{% endif %}">
                         <i class="fas fa-user-graduate"></i>
                         <span>Students</span>
                     </a>
                 </li>
                 <li>
-                    <a href="{{ url_for('rooms') }}" class="nav-link {% if request.endpoint in ['rooms', 'add_room', 'edit_room'] %}active{% endif %}">
+                    <a href="/rooms" class="nav-link {% if request.path.startswith('/rooms') %}active{% endif %}">
                         <i class="fas fa-door-open"></i>
                         <span>Rooms</span>
                     </a>
                 </li>
                 <li>
-                    <a href="{{ url_for('subjects') }}" class="nav-link {% if request.endpoint in ['subjects', 'add_subject', 'edit_subject'] %}active{% endif %}">
+                    <a href="/subjects" class="nav-link {% if request.path.startswith('/subjects') %}active{% endif %}">
                         <i class="fas fa-book"></i>
                         <span>Subjects</span>
                     </a>
                 </li>
                 <li>
-                    <a href="{{ url_for('exams') }}" class="nav-link {% if request.endpoint in ['exams', 'add_exam', 'edit_exam'] %}active{% endif %}">
+                    <a href="/exams" class="nav-link {% if request.path.startswith('/exams') %}active{% endif %}">
                         <i class="fas fa-calendar-alt"></i>
                         <span>Exams</span>
                     </a>
                 </li>
                 <li>
-                    <a href="{{ url_for('seating') }}" class="nav-link {% if request.endpoint in ['seating', 'generate_seating', 'view_seating'] %}active{% endif %}">
+                    <a href="/seating" class="nav-link {% if request.path.startswith('/seating') %}active{% endif %}">
                         <i class="fas fa-chair"></i>
                         <span>Seating</span>
                     </a>
                 </li>
                 <li>
-                    <a href="{{ url_for('invigilators') }}" class="nav-link {% if request.endpoint in ['invigilators', 'add_invigilator', 'edit_invigilator'] %}active{% endif %}">
+                    <a href="/invigilators" class="nav-link {% if request.path.startswith('/invigilators') %}active{% endif %}">
                         <i class="fas fa-user-tie"></i>
                         <span>Invigilators</span>
                     </a>
                 </li>
                 <li>
-                    <a href="{{ url_for('reports') }}" class="nav-link {% if request.endpoint == 'reports' %}active{% endif %}">
+                    <a href="/reports" class="nav-link {% if request.path.startswith('/reports') %}active{% endif %}">
                         <i class="fas fa-chart-bar"></i>
                         <span>Reports</span>
                     </a>
@@ -105,14 +105,14 @@
                         <i class="fas fa-user-circle"></i>
                     </div>
                     <div class="dropdown-menu">
-                        <a href="{{ url_for('profile') }}" class="dropdown-item">
+                        <a href="/profile" class="dropdown-item">
                             <i class="fas fa-user"></i> Profile
                         </a>
-                        <a href="{{ url_for('settings') }}" class="dropdown-item">
+                        <a href="/settings" class="dropdown-item">
                             <i class="fas fa-cog"></i> Settings
                         </a>
                         <div class="dropdown-divider"></div>
-                        <a href="{{ url_for('logout') }}" class="dropdown-item">
+                        <a href="/logout" class="dropdown-item">
                             <i class="fas fa-sign-out-alt"></i> Logout
                         </a>
                     </div>

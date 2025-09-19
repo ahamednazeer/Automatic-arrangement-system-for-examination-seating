@@ -1,0 +1,6 @@
+student_id,name,department,semester,email,phone
+CS2024001,John Doe,Computer Science,3,john@example.com,+1234567890
+IT2024002,Jane Smith,Information Technology,2,jane@example.com,+0987654321
+ME2024003,Bob Johnson,Mechanical Engineering,4,bob@example.com,+1122334455
+EE2024004,Alice Brown,Electrical Engineering,1,alice@example.com,+5566778899
+CE2024005,Charlie Wilson,Civil Engineering,5,charlie@example.com,+9988776655

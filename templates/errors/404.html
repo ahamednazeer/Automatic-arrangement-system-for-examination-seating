@@ -12,9 +12,9 @@
                     <h3><i class="fas fa-exclamation-triangle text-warning"></i> Oops! Page not found.</h3>
                     <p>
                         We could not find the page you were looking for.
-                        Meanwhile, you may <a href="{{ url_for('dashboard.dashboard') }}">return to dashboard</a> or try using the search form.
+                        Meanwhile, you may <a href="{{ url_for('dashboard') }}">return to dashboard</a> or try using the search form.
                     </p>
-                    <form class="search-form" method="GET" action="{{ url_for('students.list_students') }}">
+                    <form class="search-form" method="GET" action="{{ url_for('students') }}">
                         <div class="input-group">
                             <input type="text" name="search" class="form-control" placeholder="Search students...">
                             <div class="input-group-append">
